@@ -318,7 +318,7 @@ function App() {
         {tenantPage === 'stores' ? (
           <StoresPage token={token} tenantId={tenantId} />
         ) : tenantPage === 'users' ? (
-          <UsersPage />
+          <UsersPage token={token} tenantId={tenantId} />
         ) : (
           <DashboardPage
             userName={userName}

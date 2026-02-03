@@ -74,6 +74,18 @@ export default function StoresPage({ token, tenantId }) {
     loadStores()
   }, [resolvedTenantId, token])
 
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 700px)')
+    const syncView = () => {
+      if (media.matches) {
+        setViewMode('grid')
+      }
+    }
+    syncView()
+    media.addEventListener('change', syncView)
+    return () => media.removeEventListener('change', syncView)
+  }, [])
+
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
