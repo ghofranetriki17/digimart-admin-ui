@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import './App.css'
+import AdminLayout from './layouts/AdminLayout'
+import TenantLayout from './layouts/TenantLayout'
+import LoginPage from './pages/auth/LoginPage'
+import DashboardPage from './pages/dashboard/DashboardPage'
+import StoresPage from './pages/stores/StoresPage'
+import UsersPage from './pages/users/UsersPage'
 
 const STORAGE_KEY = 'digimart.auth'
 const REGISTER_KEY = 'digimart.register'
@@ -20,6 +25,9 @@ function App() {
   const [roles, setRoles] = useState([])
   const [userName, setUserName] = useState('')
   const [tenantName, setTenantName] = useState('')
+  const [tenantId, setTenantId] = useState(null)
+  const [userId, setUserId] = useState(null)
+  const [tenantPage, setTenantPage] = useState('dashboard')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -32,6 +40,8 @@ function App() {
       setRoles(saved.roles || [])
       setUserName(saved.userName || '')
       setTenantName(saved.tenantName || '')
+      setTenantId(saved.tenantId || null)
+      setUserId(saved.userId || null)
     } catch {
       localStorage.removeItem(STORAGE_KEY)
     }
@@ -71,6 +81,8 @@ function App() {
     setRoles([])
     setUserName('')
     setTenantName('')
+    setTenantId(null)
+    setUserId(null)
     localStorage.removeItem(STORAGE_KEY)
   }
 
@@ -98,6 +110,8 @@ function App() {
       const data = await res.json()
       const nextToken = data.token
       const nextRoles = data.roles || []
+      const nextTenantId = data.tenantId
+      const nextUserId = data.userId
 
       const userRes = await fetch(`/api/users/${data.userId}`, {
         headers: { Authorization: `Bearer ${nextToken}` },
@@ -120,11 +134,15 @@ function App() {
       setRoles(nextRoles)
       setUserName(nextUserName)
       setTenantName(nextTenantName)
+      setTenantId(nextTenantId)
+      setUserId(nextUserId)
       saveSession({
         token: nextToken,
         roles: nextRoles,
         userName: nextUserName,
         tenantName: nextTenantName,
+        tenantId: nextTenantId,
+        userId: nextUserId,
       })
       setMode('login')
     } catch (err) {
@@ -227,6 +245,8 @@ function App() {
       const data = await res.json()
       const nextToken = data.token
       const nextRoles = data.roles || []
+      const nextTenantId = data.tenantId
+      const nextUserId = data.userId
 
       const userRes = await fetch(`/api/users/${data.userId}`, {
         headers: { Authorization: `Bearer ${nextToken}` },
@@ -249,11 +269,15 @@ function App() {
       setRoles(nextRoles)
       setUserName(nextUserName)
       setTenantName(nextTenantName)
+      setTenantId(nextTenantId)
+      setUserId(nextUserId)
       saveSession({
         token: nextToken,
         roles: nextRoles,
         userName: nextUserName,
         tenantName: nextTenantName,
+        tenantId: nextTenantId,
+        userId: nextUserId,
       })
       setMode('login')
       setRegisterStep(1)
@@ -270,189 +294,78 @@ function App() {
   const isSuperAdmin = roles.includes('SUPER_ADMIN')
 
   if (token) {
+    if (isSuperAdmin) {
+      return (
+        <AdminLayout title="Admin Dashboard" onLogout={clearSession}>
+          <DashboardPage
+            userName={userName}
+            tenantName={tenantName}
+            isSuperAdmin={isSuperAdmin}
+          />
+        </AdminLayout>
+      )
+    }
+
     return (
-      <div className="app">
-        <header className="topbar">
-          <h1>{isSuperAdmin ? 'Admin Dashboard' : 'Tenant Dashboard'}</h1>
-          <button className="secondary" onClick={clearSession}>
-            Logout
-          </button>
-        </header>
-        <p className="subtitle">
-          Hi Mr {userName} - {isSuperAdmin ? 'Platform Admin' : tenantName}
-        </p>
-        <div className="panel">
-          <p>Dashboard content will be built later.</p>
-        </div>
-      </div>
+      <TenantLayout
+        title="Seller Dashboard"
+        tenantName={tenantName}
+        userName={userName}
+        onLogout={clearSession}
+        onSelect={(key) => setTenantPage(key)}
+        activeKey={tenantPage}
+      >
+        {tenantPage === 'stores' ? (
+          <StoresPage token={token} tenantId={tenantId} />
+        ) : tenantPage === 'users' ? (
+          <UsersPage />
+        ) : (
+          <DashboardPage
+            userName={userName}
+            tenantName={tenantName}
+            isSuperAdmin={isSuperAdmin}
+          />
+        )}
+      </TenantLayout>
     )
   }
 
   return (
-    <div className="app">
-      <h1>{mode === 'register' ? 'Create Your Store' : 'Digimart Login'}</h1>
-      <p>
-        {mode === 'register'
-          ? 'Create a tenant and its first owner account.'
-          : 'Sign in to access your dashboard.'}
-      </p>
-
-      <form
-        onSubmit={mode === 'register' ? registerTenant : login}
-        className="form"
-      >
-        {mode === 'register' && registerStep === 1 ? (
-          <>
-            <label className="field">
-              <span>Tenant Name</span>
-              <input
-                type="text"
-                value={newTenantName}
-                onChange={(e) => setNewTenantName(e.target.value)}
-                required
-              />
-            </label>
-
-            <label className="field">
-              <span>Subdomain (auto)</span>
-              <input
-                type="text"
-                value={
-                  registeredSubdomain
-                    ? `${registeredSubdomain}.digimart.tn`
-                    : newTenantName
-                      ? `${newTenantName
-                          .toLowerCase()
-                          .trim()
-                          .replace(/[^a-z0-9]+/g, '-')
-                          .replace(/^-+/, '')
-                          .replace(/-+$/, '')}.digimart.tn`
-                      : ''
-                }
-                readOnly
-              />
-            </label>
-
-            <label className="field">
-              <span>Contact Email</span>
-              <input
-                type="email"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                required
-              />
-            </label>
-
-            <label className="field">
-              <span>Contact Phone</span>
-              <input
-                type="text"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                required
-              />
-            </label>
-          </>
-        ) : null}
-
-        {mode === 'register' && registerStep === 2 ? (
-          <>
-            <label className="field">
-              <span>Owner First Name</span>
-              <input
-                type="text"
-                value={ownerFirstName}
-                onChange={(e) => setOwnerFirstName(e.target.value)}
-                required
-              />
-            </label>
-
-            <label className="field">
-              <span>Owner Last Name</span>
-              <input
-                type="text"
-                value={ownerLastName}
-                onChange={(e) => setOwnerLastName(e.target.value)}
-                required
-              />
-            </label>
-          </>
-        ) : null}
-
-        {mode === 'login' || registerStep === 2 ? (
-          <>
-            <label className="field">
-              <span>Email</span>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </label>
-
-            <label className="field">
-              <span>Password</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </label>
-          </>
-        ) : null}
-
-        {error ? <p className="error">{error}</p> : null}
-
-        <div className="actions">
-          <button type="submit" disabled={loading}>
-            {loading
-              ? mode === 'register'
-                ? registerStep === 1
-                  ? 'Validating...'
-                  : 'Creating...'
-                : 'Signing in...'
-              : mode === 'register'
-                ? registerStep === 1
-                  ? 'Validate tenant'
-                  : 'Create Store'
-                : 'Login'}
-          </button>
-          {mode === 'register' ? (
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => {
-                setMode('login')
-                setRegisterStep(1)
-                setRegisteredTenantId(null)
-                setRegisteredSubdomain('')
-                localStorage.removeItem(REGISTER_KEY)
-              }}
-            >
-              Back to login
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => {
-                  setMode('register')
-                  setRegisterStep(1)
-                }}
-              >
-                Create your store
-              </button>
-              <button type="button" className="secondary">
-                Join a store
-              </button>
-            </>
-          )}
-        </div>
-      </form>
-    </div>
+    <LoginPage
+      mode={mode}
+      registerStep={registerStep}
+      newTenantName={newTenantName}
+      contactEmail={contactEmail}
+      contactPhone={contactPhone}
+      ownerFirstName={ownerFirstName}
+      ownerLastName={ownerLastName}
+      email={email}
+      password={password}
+      registeredSubdomain={registeredSubdomain}
+      error={error}
+      loading={loading}
+      onChange={(field, value) => {
+        if (field === 'newTenantName') setNewTenantName(value)
+        if (field === 'contactEmail') setContactEmail(value)
+        if (field === 'contactPhone') setContactPhone(value)
+        if (field === 'ownerFirstName') setOwnerFirstName(value)
+        if (field === 'ownerLastName') setOwnerLastName(value)
+        if (field === 'email') setEmail(value)
+        if (field === 'password') setPassword(value)
+      }}
+      onSubmit={mode === 'register' ? registerTenant : login}
+      onSwitchMode={() => {
+        setMode('register')
+        setRegisterStep(1)
+      }}
+      onBackToLogin={() => {
+        setMode('login')
+        setRegisterStep(1)
+        setRegisteredTenantId(null)
+        setRegisteredSubdomain('')
+        localStorage.removeItem(REGISTER_KEY)
+      }}
+    />
   )
 }
 

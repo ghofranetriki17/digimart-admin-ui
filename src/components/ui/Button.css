@@ -1,0 +1,29 @@
+.ui-button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ui-button.secondary {
+  background: #e2e8f0;
+  color: #111827;
+}
+
+.ui-button.danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.ui-button:disabled {
+  background: #8aa4f6;
+  cursor: not-allowed;
+}

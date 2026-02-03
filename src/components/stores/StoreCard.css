@@ -1,0 +1,134 @@
+.store-card {
+  background: #ffffff;
+  border-radius: 22px;
+  border: 2px solid #c7d2fe;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.store-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.store-card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.store-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.store-card-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.store-card-code {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #4338ca;
+  border: 1px solid #e0e7ff;
+  background: #eef2ff;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.store-card-status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.store-card-status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.store-card-status.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.store-card-type {
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  color: #94a3b8;
+}
+
+.store-card-divider {
+  height: 1px;
+  background: #eef2f7;
+}
+
+.store-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #475569;
+  font-size: 14px;
+}
+
+.store-card-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.store-card-row-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.store-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.store-card-action {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-weight: 600;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.store-card-action.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fff5f5;
+}

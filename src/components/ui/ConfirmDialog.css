@@ -1,0 +1,16 @@
+.ui-confirm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ui-confirm-body p {
+  margin: 0;
+  color: #374151;
+}
+
+.ui-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
