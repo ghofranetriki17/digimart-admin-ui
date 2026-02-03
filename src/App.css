@@ -57,6 +57,13 @@ button:disabled {
   color: #475569;
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .panel {
   margin-top: 16px;
   padding: 16px;
