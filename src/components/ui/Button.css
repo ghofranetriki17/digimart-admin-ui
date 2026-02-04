@@ -1,29 +1,47 @@
 .ui-button {
-  padding: 10px 14px;
-  border: none;
-  border-radius: 6px;
-  background: #2563eb;
+  padding: 11px 18px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: var(--accent-500);
   color: #ffffff;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  box-shadow: 0 10px 18px rgba(15, 118, 110, 0.2);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .ui-button.secondary {
-  background: #e2e8f0;
-  color: #111827;
+  background: #ffffff;
+  color: var(--ink-700);
+  border-color: var(--border-200);
+  box-shadow: none;
 }
 
 .ui-button.danger {
-  background: #ef4444;
+  background: var(--danger-500);
   color: #ffffff;
+  box-shadow: 0 10px 18px rgba(220, 38, 38, 0.25);
+}
+
+.ui-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(15, 118, 110, 0.26);
+}
+
+.ui-button.secondary:hover:not(:disabled) {
+  background: var(--surface-300);
+  box-shadow: none;
 }
 
 .ui-button:disabled {
-  background: #8aa4f6;
+  background: #94a3b8;
+  border-color: transparent;
+  box-shadow: none;
   cursor: not-allowed;
 }

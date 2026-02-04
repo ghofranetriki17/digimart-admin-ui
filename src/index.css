@@ -1,29 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Sora:wght@300;400;500;600&display=swap');
+
 * {
   box-sizing: border-box;
 }
 
+:root {
+  color-scheme: light;
+  --ink-900: #0f172a;
+  --ink-700: #334155;
+  --ink-500: #64748b;
+  --ink-400: #94a3b8;
+  --surface-100: #ffffff;
+  --surface-200: #f8fafc;
+  --surface-300: #eef2f7;
+  --border-200: #e2e8f0;
+  --accent-500: #0f766e;
+  --accent-600: #0b5f5a;
+  --accent-soft: rgba(15, 118, 110, 0.12);
+  --warm-500: #f97316;
+  --warm-soft: rgba(249, 115, 22, 0.12);
+  --danger-500: #dc2626;
+  --shadow-md: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
 body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f6f7fb;
-  color: #1c1d21;
+  font-family: 'Sora', 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #fef3c7 0%, #f8fafc 35%, #eef2f7 100%);
+  color: var(--ink-900);
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: 'Space Grotesk', 'Sora', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 button {
-  padding: 10px 14px;
   border: none;
-  border-radius: 6px;
-  background: #2563eb;
-  color: #fff;
   cursor: pointer;
-}
-
-button.secondary {
-  background: #e2e8f0;
-  color: #111827;
+  background: transparent;
 }
 
 button:disabled {
-  background: #8aa4f6;
   cursor: not-allowed;
+  opacity: 0.6;
+}
+
+::selection {
+  background: var(--accent-soft);
 }

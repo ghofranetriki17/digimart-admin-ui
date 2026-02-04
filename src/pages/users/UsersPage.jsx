@@ -31,6 +31,11 @@ export default function UsersPage({ token, tenantId }) {
   const [cloneTemplateId, setCloneTemplateId] = useState('')
   const [cloneCode, setCloneCode] = useState('')
   const [cloneLabel, setCloneLabel] = useState('')
+  const [templateCode, setTemplateCode] = useState('')
+  const [templateLabel, setTemplateLabel] = useState('')
+  const [selectedRoleLabel, setSelectedRoleLabel] = useState('')
+  const [selectedRoleTenantId, setSelectedRoleTenantId] = useState(null)
+  const [roleManagerTab, setRoleManagerTab] = useState('vendor')
   const [viewMode, setViewMode] = useState('grid')
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
@@ -39,6 +44,11 @@ export default function UsersPage({ token, tenantId }) {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [permSearch, setPermSearch] = useState('')
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const isPlatformAdmin = tenantId === 1
+  const canEditSelected = Boolean(selectedRoleId)
 
   const headers = useMemo(
     () => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }),
@@ -47,6 +57,9 @@ export default function UsersPage({ token, tenantId }) {
 
   const parseError = async (res) => {
     const text = await res.text()
+    if (!text) {
+      return `HTTP ${res.status} ${res.statusText || ''}`.trim()
+    }
     try {
       const parsed = JSON.parse(text)
       if (parsed.errors && typeof parsed.errors === 'object') {
@@ -90,6 +103,14 @@ export default function UsersPage({ token, tenantId }) {
       const list = Array.isArray(data) ? data : []
       setRoles(list)
       setAvailableRoles(list.filter((role) => role.tenantId === tenantId))
+      
+      // ✅ Mettre à jour les permissions du rôle sélectionné après le rechargement
+      if (selectedRoleId) {
+        const updatedRole = list.find(r => r.id === selectedRoleId)
+        if (updatedRole) {
+          setRolePermSelection(updatedRole.permissions || [])
+        }
+      }
     } catch (err) {
       setError(err.message || 'Failed to load roles')
     }
@@ -202,7 +223,6 @@ export default function UsersPage({ token, tenantId }) {
     }
   }
 
-
   const saveRoles = async () => {
     if (!roleTarget) return
     setError('')
@@ -226,27 +246,82 @@ export default function UsersPage({ token, tenantId }) {
   const selectRoleForPermissions = (roleId) => {
     const role = roles.find((item) => item.id === roleId)
     setSelectedRoleId(roleId)
-    setRolePermSelection(role?.permissions || [])
+    const nextPermissions = role?.permissions || []
+    setRolePermSelection(nextPermissions)
+    setSelectedRoleLabel(role?.label || '')
+    setSelectedRoleTenantId(role?.tenantId ?? null)
   }
 
-  const saveRolePermissions = async () => {
+  const applyRolePermissions = async (nextPermissions) => {
     if (!selectedRoleId) {
-      setError('Selectionnez un role du tenant.')
-      return
+      setError('Selectionnez un role a modifier.')
+      return false
     }
     setError('')
     try {
       const res = await fetch(`/api/roles/${selectedRoleId}/permissions`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ permissionCodes: rolePermSelection }),
+        body: JSON.stringify({ permissionCodes: nextPermissions }),
+      })
+      if (!res.ok) {
+        throw new Error(await parseError(res))
+      }
+      return true
+    } catch (err) {
+      setError(err.message || 'Permissions update failed')
+      return false
+    }
+  }
+
+  const saveRoleLabel = async () => {
+    if (!selectedRoleId) {
+      setError('Selectionnez un role a modifier.')
+      return
+    }
+    if (!selectedRoleLabel.trim()) {
+      setError('Le label est requis.')
+      return
+    }
+    setError('')
+    try {
+      const res = await fetch(`/api/roles/${selectedRoleId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ label: selectedRoleLabel }),
       })
       if (!res.ok) {
         throw new Error(await parseError(res))
       }
       await loadRoles()
     } catch (err) {
-      setError(err.message || 'Permissions update failed')
+      setError(err.message || 'Update label failed')
+    }
+  }
+
+  const createTemplate = async () => {
+    if (!templateCode || !templateLabel) {
+      setError('Code et label sont requis pour le template.')
+      return
+    }
+    setError('')
+    try {
+      const res = await fetch('/api/roles/templates', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          code: templateCode,
+          label: templateLabel,
+        }),
+      })
+      if (!res.ok) {
+        throw new Error(await parseError(res))
+      }
+      await loadRoles()
+      setTemplateCode('')
+      setTemplateLabel('')
+    } catch (err) {
+      setError(err.message || 'Template creation failed')
     }
   }
 
@@ -269,12 +344,72 @@ export default function UsersPage({ token, tenantId }) {
       if (!res.ok) {
         throw new Error(await parseError(res))
       }
+      const data = await res.json()
       await loadRoles()
+      if (data?.id) {
+        setSelectedRoleId(data.id)
+        setSelectedRoleLabel(data.label || '')
+        setSelectedRoleTenantId(data.tenantId ?? null)
+        setRolePermSelection(data.permissions || [])
+      }
       setCloneTemplateId('')
       setCloneCode('')
       setCloneLabel('')
     } catch (err) {
       setError(err.message || 'Role clone failed')
+    }
+  }
+
+  const createTenantRole = async () => {
+    if (!cloneCode || !cloneLabel) {
+      setError('Code et label sont requis pour le role.')
+      return
+    }
+    setError('')
+    try {
+      const res = await fetch('/api/roles', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          code: cloneCode,
+          label: cloneLabel,
+        }),
+      })
+      if (!res.ok) {
+        throw new Error(await parseError(res))
+      }
+      const data = await res.json()
+      await loadRoles()
+      if (data?.id) {
+        setSelectedRoleId(data.id)
+        setSelectedRoleLabel(data.label || '')
+        setSelectedRoleTenantId(data.tenantId ?? null)
+        setRolePermSelection(data.permissions || [])
+      }
+      setCloneTemplateId('')
+      setCloneCode('')
+      setCloneLabel('')
+    } catch (err) {
+      setError(err.message || 'Role creation failed')
+    }
+  }
+
+  const handleDeleteRole = async (roleId) => {
+    try {
+      const res = await fetch(`/api/roles/${roleId}`, {
+        method: 'DELETE',
+        headers,
+      })
+      if (!res.ok) {
+        throw new Error(await parseError(res))
+      }
+      await loadRoles()
+      setSelectedRoleId(null)
+      setSelectedRoleLabel('')
+      setSelectedRoleTenantId(null)
+      setRolePermSelection([])
+    } catch (err) {
+      setError(err.message || 'Role delete failed')
     }
   }
 
@@ -324,6 +459,78 @@ export default function UsersPage({ token, tenantId }) {
   const templateRoles = roles.filter((role) => role.tenantId === 0)
   const tenantRoles = roles.filter((role) => role.tenantId === tenantId)
 
+  const permissionByCode = useMemo(() => {
+    const map = new Map()
+    permissions.forEach((permission) => {
+      map.set(permission.code, permission)
+    })
+    return map
+  }, [permissions])
+
+  const availablePermissions = useMemo(() => {
+    const term = permSearch.trim().toLowerCase()
+    return permissions
+      .filter((permission) => {
+        if (rolePermSelection.includes(permission.code)) return false
+        if (!term) return true
+        const label = permission.label || ''
+        return (
+          String(permission.code).toLowerCase().includes(term)
+          || String(label).toLowerCase().includes(term)
+        )
+      })
+      .sort((a, b) => String(a.code).localeCompare(String(b.code)))
+  }, [permissions, permSearch, rolePermSelection])
+
+  const selectedPermissions = useMemo(
+    () => rolePermSelection
+      .map((code) => permissionByCode.get(code) || { code, label: code })
+      .sort((a, b) => String(a.code).localeCompare(String(b.code))),
+    [permissionByCode, rolePermSelection],
+  )
+
+  const addPermission = async (code) => {
+    if (!canEditSelected || isUpdating) return
+    
+    // ✅ Construire la nouvelle liste de permissions
+    const next = rolePermSelection.includes(code) 
+      ? rolePermSelection 
+      : [...rolePermSelection, code]
+    
+    setIsUpdating(true)
+    const ok = await applyRolePermissions(next)
+    
+    if (ok) {
+      // ✅ Si succès, recharger pour synchroniser
+      await loadRoles()
+    } else {
+      // ❌ Si échec, restaurer l'état précédent
+      setRolePermSelection(rolePermSelection)
+    }
+    
+    setIsUpdating(false)
+  }
+
+  const removePermission = async (code) => {
+    if (!canEditSelected || isUpdating) return
+    
+    // ✅ Construire la nouvelle liste de permissions
+    const next = rolePermSelection.filter((item) => item !== code)
+    
+    setIsUpdating(true)
+    const ok = await applyRolePermissions(next)
+    
+    if (ok) {
+      // ✅ Si succès, recharger pour synchroniser
+      await loadRoles()
+    } else {
+      // ❌ Si échec, restaurer l'état précédent
+      setRolePermSelection(rolePermSelection)
+    }
+    
+    setIsUpdating(false)
+  }
+
   return (
     <div className="users-page">
       <header className="users-hero">
@@ -331,7 +538,7 @@ export default function UsersPage({ token, tenantId }) {
           <h2>Gestion des Utilisateurs</h2>
           <span className="users-hero-badge">TEAM ACCESS</span>
         </div>
-        <p>Gerez les acces de votre equipe, roles et permissions.</p>
+        <p>Gerez les acces de votre equipe, roles et permissions, sans complexite.</p>
         <div className="users-hero-actions">
           <div className="users-view-toggle">
             <button
@@ -352,10 +559,10 @@ export default function UsersPage({ token, tenantId }) {
             </button>
           </div>
           <Button type="button" variant="secondary" onClick={openRoleManager} className="users-role-button">
-            Gerer les roles
+            Roles & permissions
           </Button>
           <Button type="button" onClick={openCreate} className="users-add-button">
-            <FaUserPlus /> Ajouter un utilisateur
+            <FaUserPlus /> Ajouter un membre
           </Button>
         </div>
       </header>
@@ -482,6 +689,10 @@ export default function UsersPage({ token, tenantId }) {
         title="Permissions & Roles"
         onClose={() => setRoleModalOpen(false)}
       >
+        <p className="users-hint">
+          Choisissez les roles que cet utilisateur peut avoir. Les roles sont des groupes
+          de permissions.
+        </p>
         {roleTarget ? (
           <div className="users-roles">
             <div className="users-roles-header">
@@ -528,76 +739,320 @@ export default function UsersPage({ token, tenantId }) {
         onClose={() => setRoleManagerOpen(false)}
       >
         <div className="users-role-manager">
-          <div className="users-role-panel">
-            <h4>Templates</h4>
-            <select
-              value={cloneTemplateId}
-              onChange={(e) => setCloneTemplateId(e.target.value)}
-            >
-              <option value="">Choisir un template</option>
-              {templateRoles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-            <TextInput
-              label="Code"
-              value={cloneCode}
-              onChange={(e) => setCloneCode(e.target.value)}
-            />
-            <TextInput
-              label="Label"
-              value={cloneLabel}
-              onChange={(e) => setCloneLabel(e.target.value)}
-            />
-            <Button type="button" onClick={cloneRole}>
-              Cloner
-            </Button>
-          </div>
-
-          <div className="users-role-panel">
-            <h4>Roles du tenant</h4>
-            <div className="users-role-list">
-              {tenantRoles.map((role) => (
-                <button
-                  key={role.id}
-                  type="button"
-                  className={`users-role-item ${
-                    selectedRoleId === role.id ? 'active' : ''
-                  }`}
-                  onClick={() => selectRoleForPermissions(role.id)}
-                >
-                  {role.label}
-                </button>
-              ))}
+          <div className="users-role-banner">
+            <div>
+              <div className="users-role-banner-title">Espace roles vendeur</div>
+              <p className="users-hint">
+                Flux simple en 3 etapes : choisir un template, creer un role, puis ajuster les permissions.
+              </p>
+            </div>
+            <div className="users-role-legend">
+              <span>Template</span>
+              <span>Role du tenant</span>
             </div>
           </div>
+
+          <div className="users-role-tabs">
+            <button
+              type="button"
+              className={`users-role-tab ${roleManagerTab === 'vendor' ? 'active' : ''}`}
+              onClick={() => setRoleManagerTab('vendor')}
+            >
+              Espace vendeur
+            </button>
+            {isPlatformAdmin ? (
+              <button
+                type="button"
+                className={`users-role-tab ${roleManagerTab === 'templates' ? 'active' : ''}`}
+                onClick={() => setRoleManagerTab('templates')}
+              >
+                Espace templates
+              </button>
+            ) : null}
+          </div>
+
+          {roleManagerTab === 'vendor' ? (
+            <div className="users-role-flow">
+              <div className="users-role-step-card">
+                <div className="users-role-step">1</div>
+                <div className="users-role-step-content">
+                  <h4>Choisir un template</h4>
+                  <p className="users-hint">Le role sera clone avec les permissions du template.</p>
+                  <select
+                    value={cloneTemplateId}
+                    onChange={(e) => {
+                      setCloneTemplateId(e.target.value)
+                      const selected = Number(e.target.value)
+                      if (selected) {
+                        selectRoleForPermissions(selected)
+                      }
+                    }}
+                  >
+                    <option value="">Choisir un template</option>
+                    {templateRoles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="users-role-grid">
+                    {templateRoles.map((role) => (
+                      <button
+                        key={role.id}
+                        type="button"
+                        className={`users-role-tile template ${
+                          selectedRoleId === role.id ? 'active' : ''
+                        }`}
+                        onClick={() => {
+                          setCloneTemplateId(String(role.id))
+                          selectRoleForPermissions(role.id)
+                        }}
+                      >
+                        <span>{role.label}</span>
+                        <small>{role.permissions?.length || 0} permissions</small>
+                      </button>
+                    ))}
+                    {templateRoles.length === 0 ? (
+                      <div className="users-role-empty">
+                        Aucun template disponible. Contactez l'admin plateforme.
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              <div className="users-role-step-card">
+                <div className="users-role-step">2</div>
+                <div className="users-role-step-content">
+                  <h4>Creer le role du tenant</h4>
+                  <TextInput
+                    label="Code du role"
+                    value={cloneCode}
+                    onChange={(e) => setCloneCode(e.target.value)}
+                  />
+                  <TextInput
+                    label="Label du role"
+                    value={cloneLabel}
+                    onChange={(e) => setCloneLabel(e.target.value)}
+                  />
+                  <div className="users-role-actions">
+                    <Button type="button" onClick={cloneRole}>
+                      Cloner ce template
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={createTenantRole}>
+                      Creer un role vide
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="users-role-step-card wide">
+                <div className="users-role-step">3</div>
+                <div className="users-role-step-content">
+                  <div className="users-role-step-header">
+                    <h4>Roles du tenant</h4>
+                    <span className="users-role-chip">
+                      Selection : {selectedRoleLabel || 'Aucun'}
+                    </span>
+                  </div>
+                  <div className="users-role-grid">
+                    {tenantRoles.map((role) => (
+                      <button
+                        key={role.id}
+                        type="button"
+                        className={`users-role-tile ${
+                          selectedRoleId === role.id ? 'active' : ''
+                        }`}
+                        onClick={() => selectRoleForPermissions(role.id)}
+                      >
+                        <span>{role.label}</span>
+                        <small>{role.permissions?.length || 0} permissions</small>
+                      </button>
+                    ))}
+                    {tenantRoles.length === 0 ? (
+                      <div className="users-role-empty">
+                        Aucun role du tenant. Clonez un template ou creez un role vide.
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="users-role-actions">
+                    <Button
+                      type="button"
+                      variant="danger"
+                      onClick={() => {
+                        if (!selectedRoleId) {
+                          setError('Selectionnez un role pour supprimer.')
+                          return
+                        }
+                        if (window.confirm('Supprimer ce role ?')) {
+                          handleDeleteRole(selectedRoleId)
+                        }
+                      }}
+                    >
+                      Supprimer le role selectionne
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {isPlatformAdmin && roleManagerTab === 'templates' ? (
+            <div className="users-role-section">
+              <div className="users-role-section-header">
+                <h4>Espace admin plateforme (templates)</h4>
+                <p className="users-hint">
+                  Cree et modifie les templates globaux (tenantId=0). Ces
+                  templates servent de base aux vendeurs.
+                </p>
+              </div>
+              <div className="users-role-panel">
+                <h4>Creer un template</h4>
+                <TextInput
+                  label="Code"
+                  value={templateCode}
+                  onChange={(e) => setTemplateCode(e.target.value)}
+                />
+                <TextInput
+                  label="Label"
+                  value={templateLabel}
+                  onChange={(e) => setTemplateLabel(e.target.value)}
+                />
+                <Button type="button" onClick={createTemplate}>
+                  Creer template
+                </Button>
+              </div>
+              <div className="users-role-panel">
+                <h4>Templates</h4>
+                <div className="users-role-list">
+                  {templateRoles.map((role) => (
+                    <button
+                      key={role.id}
+                      type="button"
+                      className={`users-role-item template ${
+                        selectedRoleId === role.id ? 'active' : ''
+                      }`}
+                      onClick={() => selectRoleForPermissions(role.id)}
+                    >
+                      {role.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           <div className="users-role-panel wide">
             <div className="users-role-panel-header">
-              <h4>Permissions</h4>
-              <Button type="button" onClick={saveRolePermissions}>
-                Enregistrer
+              <div>
+                <h4>Permissions du role selectionne</h4>
+                <div className="users-role-subtitle">
+                  {selectedRoleLabel || 'Aucun role selectionne'}
+                </div>
+              </div>
+              <span className="users-role-chip">Auto-sauvegarde</span>
+            </div>
+            {!canEditSelected ? (
+              <p className="users-hint">
+                Selectionnez un role pour modifier ses permissions.
+              </p>
+            ) : null}
+            <div className="users-permissions-toolbar">
+              <div className="users-permissions-search">
+                <input
+                  type="search"
+                  placeholder="Rechercher une permission..."
+                  value={permSearch}
+                  onChange={(e) => setPermSearch(e.target.value)}
+                />
+              </div>
+              <div className="users-permissions-actions">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={async () => {
+                    if (!canEditSelected || isUpdating) return
+                    setIsUpdating(true)
+                    const ok = await applyRolePermissions([])
+                    if (ok) {
+                      await loadRoles()
+                    }
+                    setIsUpdating(false)
+                  }}
+                  disabled={!canEditSelected || isUpdating}
+                >
+                  {isUpdating ? 'En cours...' : 'Tout effacer'}
+                </Button>
+              </div>
+            </div>
+            <div className="users-role-inline">
+              <TextInput
+                label="Label du role"
+                value={selectedRoleLabel}
+                onChange={(e) => setSelectedRoleLabel(e.target.value)}
+                readOnly={!canEditSelected}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={saveRoleLabel}
+                disabled={!canEditSelected}
+              >
+                Mettre a jour le label
               </Button>
             </div>
-            <div className="users-roles-grid">
-              {permissions.map((permission) => (
-                <label key={permission.id} className="users-role-card">
-                  <input
-                    type="checkbox"
-                    checked={rolePermSelection.includes(permission.code)}
-                    onChange={(e) => {
-                      setRolePermSelection((prev) =>
-                        e.target.checked
-                          ? [...prev, permission.code]
-                          : prev.filter((item) => item !== permission.code),
-                      )
-                    }}
-                  />
-                  <span>{permission.code}</span>
-                </label>
-              ))}
+            <div className="users-permissions-lists">
+              <div className="users-permissions-list">
+                <div className="users-permissions-list-title">Permissions disponibles</div>
+                {availablePermissions.length === 0 ? (
+                  <div className="users-role-empty">Aucune permission disponible.</div>
+                ) : (
+                  availablePermissions.map((permission) => (
+                    <div key={permission.code} className="users-permission-row">
+                      <div>
+                        <div className="users-permission-label">
+                          {permission.label || permission.code}
+                        </div>
+                        <div className="users-permission-code">{permission.code}</div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => addPermission(permission.code)}
+                        disabled={!canEditSelected || isUpdating}
+                      >
+                        {isUpdating ? '...' : 'Ajouter'}
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="users-permissions-list">
+                <div className="users-permissions-list-title">Permissions du role</div>
+                {selectedPermissions.length === 0 ? (
+                  <div className="users-role-empty">Aucune permission liee.</div>
+                ) : (
+                  selectedPermissions.map((permission) => (
+                    <div key={permission.code} className="users-permission-row selected">
+                      <div>
+                        <div className="users-permission-label">
+                          {permission.label || permission.code}
+                        </div>
+                        <div className="users-permission-code">{permission.code}</div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => removePermission(permission.code)}
+                        disabled={!canEditSelected || isUpdating}
+                      >
+                        {isUpdating ? '...' : 'Supprimer'}
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

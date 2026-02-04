@@ -1,7 +1,7 @@
 .ui-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(15, 23, 42, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,10 +12,10 @@
 .ui-modal {
   background: #ffffff;
   border-radius: 22px;
-  width: min(760px, 100%);
+  width: min(880px, 100%);
   max-height: 90vh;
   overflow: auto;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .ui-modal-header {
@@ -23,17 +23,19 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 24px;
-  border-bottom: 1px solid #eef2f7;
+  border-bottom: 1px solid var(--border-200);
+  background: linear-gradient(90deg, rgba(15, 118, 110, 0.08), transparent);
 }
 
 .ui-modal-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .ui-modal-close {
-  background: #e2e8f0;
-  color: #111827;
+  background: #ffffff;
+  color: var(--ink-700);
+  border: 1px solid var(--border-200);
   border-radius: 999px;
   padding: 6px 10px;
 }

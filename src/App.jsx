@@ -17,6 +17,7 @@ function App() {
   const [newTenantName, setNewTenantName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
   const [contactPhone, setContactPhone] = useState('')
+  const [logoFile, setLogoFile] = useState(null)
   const [ownerFirstName, setOwnerFirstName] = useState('')
   const [ownerLastName, setOwnerLastName] = useState('')
   const [registeredTenantId, setRegisteredTenantId] = useState(null)
@@ -28,6 +29,7 @@ function App() {
   const [tenantId, setTenantId] = useState(null)
   const [userId, setUserId] = useState(null)
   const [tenantPage, setTenantPage] = useState('dashboard')
+  const [adminPage, setAdminPage] = useState('dashboard')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -66,6 +68,9 @@ function App() {
       }
       if (saved.contactPhone) {
         setContactPhone(saved.contactPhone)
+      }
+      if (saved.logoFile) {
+        setLogoFile(null)
       }
     } catch {
       localStorage.removeItem(REGISTER_KEY)
@@ -202,6 +207,20 @@ function App() {
             contactPhone,
           }),
         )
+
+        if (logoFile) {
+          const formData = new FormData()
+          formData.append('file', logoFile)
+          const uploadRes = await fetch(`/api/tenants/${data.tenantId}/logo`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          })
+          if (!uploadRes.ok) {
+            const text = await uploadRes.text()
+            throw new Error(text || 'Logo upload failed')
+          }
+        }
         return
       }
 
@@ -292,16 +311,28 @@ function App() {
   }
 
   const isSuperAdmin = roles.includes('SUPER_ADMIN')
+  const isPlatformUser = tenantId === 1
 
   if (token) {
-    if (isSuperAdmin) {
+    if (isSuperAdmin || isPlatformUser) {
       return (
-        <AdminLayout title="Admin Dashboard" onLogout={clearSession}>
-          <DashboardPage
-            userName={userName}
-            tenantName={tenantName}
-            isSuperAdmin={isSuperAdmin}
-          />
+        <AdminLayout
+          title="Admin Dashboard"
+          onLogout={clearSession}
+          onSelect={(key) => setAdminPage(key)}
+          activeKey={adminPage}
+        >
+          {adminPage === 'users' ? (
+            <UsersPage token={token} tenantId={tenantId} />
+          ) : adminPage === 'stores' ? (
+            <StoresPage token={token} tenantId={tenantId} />
+          ) : (
+            <DashboardPage
+              userName={userName}
+              tenantName={tenantName}
+              isSuperAdmin={isSuperAdmin}
+            />
+          )}
         </AdminLayout>
       )
     }
@@ -348,6 +379,7 @@ function App() {
         if (field === 'newTenantName') setNewTenantName(value)
         if (field === 'contactEmail') setContactEmail(value)
         if (field === 'contactPhone') setContactPhone(value)
+        if (field === 'logoFile') setLogoFile(value)
         if (field === 'ownerFirstName') setOwnerFirstName(value)
         if (field === 'ownerLastName') setOwnerLastName(value)
         if (field === 'email') setEmail(value)

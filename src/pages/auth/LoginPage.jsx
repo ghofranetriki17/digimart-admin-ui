@@ -73,6 +73,15 @@ export default function LoginPage({
               onChange={(e) => onChange('contactPhone', e.target.value)}
               required
             />
+
+            <label className="login-file">
+              <span>Logo</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => onChange('logoFile', e.target.files?.[0] || null)}
+              />
+            </label>
           </>
         ) : null}
 
@@ -149,9 +158,7 @@ export default function LoginPage({
               >
                 Create your store
               </Button>
-              <Button type="button" variant="secondary">
-                Join a store
-              </Button>
+             
             </>
           )}
         </div>
