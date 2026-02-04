@@ -32,6 +32,13 @@
   gap: 4px;
 }
 
+.tenant-navbar-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .tenant-navbar-title-text {
   font-size: 18px;
   font-weight: 600;
@@ -41,6 +48,16 @@
 .tenant-navbar-tenant {
   font-size: 13px;
   color: #64748b;
+}
+
+.tenant-navbar-sector {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #ecfeff;
+  color: #0f766e;
+  border: 1px solid rgba(15, 118, 110, 0.2);
 }
 
 .tenant-navbar-right {

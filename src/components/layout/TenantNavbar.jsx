@@ -3,6 +3,7 @@ import './TenantNavbar.css'
 export default function TenantNavbar({
   title,
   tenantName,
+  sectorLabel,
   userName,
   onToggleSidebar,
 }) {
@@ -28,7 +29,12 @@ export default function TenantNavbar({
         </button>
         <div className="tenant-navbar-title">
           <span className="tenant-navbar-title-text">{title}</span>
-          <span className="tenant-navbar-tenant">{tenantName}</span>
+          <div className="tenant-navbar-subtitle">
+            <span className="tenant-navbar-tenant">{tenantName}</span>
+            {sectorLabel ? (
+              <span className="tenant-navbar-sector">{sectorLabel}</span>
+            ) : `hi`}
+          </div>
         </div>
       </div>
       <div className="tenant-navbar-right">

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="8" failures="0" errors="0" time="1.4854606">
+    <testsuite name="src/components/users/UserCard.test.jsx" timestamp="2026-02-04T15:53:51.978Z" hostname="DESKTOP-HU22ITR" tests="1" failures="0" errors="0" skipped="0" time="0.207594">
+        <testcase classname="src/components/users/UserCard.test.jsx" name="renders user and triggers actions" time="0.206135">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/components/stores/StoreCard.test.jsx" timestamp="2026-02-04T15:53:51.980Z" hostname="DESKTOP-HU22ITR" tests="1" failures="0" errors="0" skipped="0" time="0.2956473">
+        <testcase classname="src/components/stores/StoreCard.test.jsx" name="calls actions when buttons clicked" time="0.2942037">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/users/UsersPage.test.jsx" timestamp="2026-02-04T15:53:51.981Z" hostname="DESKTOP-HU22ITR" tests="2" failures="0" errors="0" skipped="0" time="0.4024566">
+        <testcase classname="src/pages/users/UsersPage.test.jsx" name="loads users and filters by search" time="0.2942631">
+        </testcase>
+        <testcase classname="src/pages/users/UsersPage.test.jsx" name="shows stats and role filter works" time="0.1065376">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/auth/LoginPage.test.jsx" timestamp="2026-02-04T15:53:51.981Z" hostname="DESKTOP-HU22ITR" tests="2" failures="0" errors="0" skipped="0" time="0.188154">
+        <testcase classname="src/pages/auth/LoginPage.test.jsx" name="renders login fields in login mode" time="0.0345909">
+        </testcase>
+        <testcase classname="src/pages/auth/LoginPage.test.jsx" name="renders tenant step 1 fields and logo upload" time="0.1520999">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/stores/StoresPage.test.jsx" timestamp="2026-02-04T15:53:51.982Z" hostname="DESKTOP-HU22ITR" tests="2" failures="0" errors="0" skipped="0" time="0.3916087">
+        <testcase classname="src/pages/stores/StoresPage.test.jsx" name="loads stores and filters by search" time="0.3198476">
+        </testcase>
+        <testcase classname="src/pages/stores/StoresPage.test.jsx" name="opens modal when adding a store" time="0.0704025">
+        </testcase>
+    </testsuite>
+</testsuites>

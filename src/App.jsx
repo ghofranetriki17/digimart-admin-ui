@@ -5,6 +5,7 @@ import LoginPage from './pages/auth/LoginPage'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import StoresPage from './pages/stores/StoresPage'
 import UsersPage from './pages/users/UsersPage'
+import SectorsPage from './pages/sectors/SectorsPage'
 
 const STORAGE_KEY = 'digimart.auth'
 const REGISTER_KEY = 'digimart.register'
@@ -22,11 +23,15 @@ function App() {
   const [ownerLastName, setOwnerLastName] = useState('')
   const [registeredTenantId, setRegisteredTenantId] = useState(null)
   const [registeredSubdomain, setRegisteredSubdomain] = useState('')
+  const [sectors, setSectors] = useState([])
+  const [sectorId, setSectorId] = useState('')
   const [token, setToken] = useState('')
   const [roles, setRoles] = useState([])
   const [userName, setUserName] = useState('')
   const [tenantName, setTenantName] = useState('')
   const [tenantId, setTenantId] = useState(null)
+  const [tenantSectorId, setTenantSectorId] = useState(null)
+  const [sectorLabel, setSectorLabel] = useState('')
   const [userId, setUserId] = useState(null)
   const [tenantPage, setTenantPage] = useState('dashboard')
   const [adminPage, setAdminPage] = useState('dashboard')
@@ -43,6 +48,8 @@ function App() {
       setUserName(saved.userName || '')
       setTenantName(saved.tenantName || '')
       setTenantId(saved.tenantId || null)
+      setTenantSectorId(saved.tenantSectorId || null)
+      setSectorLabel(saved.sectorLabel || '')
       setUserId(saved.userId || null)
     } catch {
       localStorage.removeItem(STORAGE_KEY)
@@ -69,6 +76,9 @@ function App() {
       if (saved.contactPhone) {
         setContactPhone(saved.contactPhone)
       }
+      if (saved.sectorId) {
+        setSectorId(String(saved.sectorId))
+      }
       if (saved.logoFile) {
         setLogoFile(null)
       }
@@ -76,6 +86,29 @@ function App() {
       localStorage.removeItem(REGISTER_KEY)
     }
   }, [])
+
+  useEffect(() => {
+    const loadSectors = async () => {
+      try {
+        const res = await fetch('/api/activity-sectors')
+        if (!res.ok) return
+        const data = await res.json()
+        setSectors(Array.isArray(data) ? data : [])
+      } catch {
+        setSectors([])
+      }
+    }
+    loadSectors()
+  }, [])
+
+  useEffect(() => {
+    if (!tenantSectorId) {
+      setSectorLabel('')
+      return
+    }
+    const sector = sectors.find((item) => item.id === tenantSectorId)
+    setSectorLabel(sector ? sector.label : '')
+  }, [tenantSectorId, sectors])
 
   const saveSession = (next) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
@@ -87,6 +120,8 @@ function App() {
     setUserName('')
     setTenantName('')
     setTenantId(null)
+    setTenantSectorId(null)
+    setSectorLabel('')
     setUserId(null)
     localStorage.removeItem(STORAGE_KEY)
   }
@@ -117,6 +152,7 @@ function App() {
       const nextRoles = data.roles || []
       const nextTenantId = data.tenantId
       const nextUserId = data.userId
+      const responseSectorLabel = data.sectorLabel || ''
 
       const userRes = await fetch(`/api/users/${data.userId}`, {
         headers: { Authorization: `Bearer ${nextToken}` },
@@ -127,19 +163,27 @@ function App() {
         : 'User'
 
       let nextTenantName = `Tenant #${data.tenantId}`
+      let nextTenantSectorId = data.sectorId || null
       const tenantRes = await fetch(`/api/tenants/${data.tenantId}`, {
         headers: { Authorization: `Bearer ${nextToken}` },
       })
       if (tenantRes.ok) {
         const tenantData = await tenantRes.json()
         nextTenantName = tenantData.name
+        nextTenantSectorId = tenantData.sectorId || null
       }
 
       setToken(nextToken)
       setRoles(nextRoles)
       setUserName(nextUserName)
+      const nextSectorLabel = responseSectorLabel
+        || (nextTenantSectorId
+          ? (sectors.find((item) => item.id === nextTenantSectorId)?.label || '')
+          : '')
       setTenantName(nextTenantName)
       setTenantId(nextTenantId)
+      setTenantSectorId(nextTenantSectorId)
+      setSectorLabel(nextSectorLabel)
       setUserId(nextUserId)
       saveSession({
         token: nextToken,
@@ -147,6 +191,8 @@ function App() {
         userName: nextUserName,
         tenantName: nextTenantName,
         tenantId: nextTenantId,
+        tenantSectorId: nextTenantSectorId,
+        sectorLabel: nextSectorLabel,
         userId: nextUserId,
       })
       setMode('login')
@@ -170,6 +216,7 @@ function App() {
             tenantName: newTenantName,
             contactEmail,
             contactPhone,
+            sectorId: sectorId ? Number(sectorId) : null,
             status: 'ACTIVE',
             defaultLocale: 'FR',
           }),
@@ -205,6 +252,7 @@ function App() {
             tenantName: newTenantName,
             contactEmail,
             contactPhone,
+            sectorId,
           }),
         )
 
@@ -266,6 +314,7 @@ function App() {
       const nextRoles = data.roles || []
       const nextTenantId = data.tenantId
       const nextUserId = data.userId
+      const responseSectorLabel = data.sectorLabel || ''
 
       const userRes = await fetch(`/api/users/${data.userId}`, {
         headers: { Authorization: `Bearer ${nextToken}` },
@@ -276,19 +325,27 @@ function App() {
         : 'User'
 
       let nextTenantName = `Tenant #${data.tenantId}`
+      let nextTenantSectorId = data.sectorId || null
       const tenantRes = await fetch(`/api/tenants/${data.tenantId}`, {
         headers: { Authorization: `Bearer ${nextToken}` },
       })
       if (tenantRes.ok) {
         const tenantData = await tenantRes.json()
         nextTenantName = tenantData.name
+        nextTenantSectorId = tenantData.sectorId || null
       }
 
       setToken(nextToken)
       setRoles(nextRoles)
       setUserName(nextUserName)
+      const nextSectorLabel = responseSectorLabel
+        || (nextTenantSectorId
+          ? (sectors.find((item) => item.id === nextTenantSectorId)?.label || '')
+          : '')
       setTenantName(nextTenantName)
       setTenantId(nextTenantId)
+      setTenantSectorId(nextTenantSectorId)
+      setSectorLabel(nextSectorLabel)
       setUserId(nextUserId)
       saveSession({
         token: nextToken,
@@ -296,6 +353,8 @@ function App() {
         userName: nextUserName,
         tenantName: nextTenantName,
         tenantId: nextTenantId,
+        tenantSectorId: nextTenantSectorId,
+        sectorLabel: nextSectorLabel,
         userId: nextUserId,
       })
       setMode('login')
@@ -324,6 +383,8 @@ function App() {
         >
           {adminPage === 'users' ? (
             <UsersPage token={token} tenantId={tenantId} />
+          ) : adminPage === 'sectors' ? (
+            <SectorsPage token={token} />
           ) : adminPage === 'stores' ? (
             <StoresPage token={token} tenantId={tenantId} />
           ) : (
@@ -341,6 +402,7 @@ function App() {
       <TenantLayout
         title="Seller Dashboard"
         tenantName={tenantName}
+        sectorLabel={sectorLabel}
         userName={userName}
         onLogout={clearSession}
         onSelect={(key) => setTenantPage(key)}
@@ -379,6 +441,7 @@ function App() {
         if (field === 'newTenantName') setNewTenantName(value)
         if (field === 'contactEmail') setContactEmail(value)
         if (field === 'contactPhone') setContactPhone(value)
+        if (field === 'sectorId') setSectorId(value)
         if (field === 'logoFile') setLogoFile(value)
         if (field === 'ownerFirstName') setOwnerFirstName(value)
         if (field === 'ownerLastName') setOwnerLastName(value)
@@ -395,8 +458,11 @@ function App() {
         setRegisterStep(1)
         setRegisteredTenantId(null)
         setRegisteredSubdomain('')
+        setSectorId('')
         localStorage.removeItem(REGISTER_KEY)
       }}
+      sectors={sectors}
+      sectorId={sectorId}
     />
   )
 }

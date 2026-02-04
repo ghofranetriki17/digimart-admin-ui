@@ -7,6 +7,28 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-menu {
+  display: none;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
 .navbar-actions {
   color: #64748b;
+}
+
+@media (max-width: 900px) {
+  .navbar-menu {
+    display: inline-flex;
+  }
 }

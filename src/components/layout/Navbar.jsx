@@ -1,9 +1,19 @@
 import './Navbar.css'
 
-export default function Navbar({ title }) {
+export default function Navbar({ title, onToggleSidebar }) {
   return (
     <header className="navbar">
-      <h2>{title}</h2>
+      <div className="navbar-left">
+        <button
+          type="button"
+          className="navbar-menu"
+          onClick={onToggleSidebar}
+          aria-label="Open navigation"
+        >
+          Menu
+        </button>
+        <h2>{title}</h2>
+      </div>
       <div className="navbar-actions">Digimart</div>
     </header>
   )

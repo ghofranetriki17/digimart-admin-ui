@@ -34,6 +34,26 @@
   background: #ffffff;
 }
 
+.login-select {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.login-select select {
+  padding: 10px 12px;
+  border: 1px solid var(--border-200);
+  border-radius: 14px;
+  background: #ffffff;
+  font-size: 14px;
+}
+
+.login-select select:disabled {
+  background: #f1f5f9;
+  color: var(--ink-500);
+}
+
 .error {
   color: #7f1d1d;
   background: #fff1f2;

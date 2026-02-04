@@ -15,6 +15,8 @@ export default function LoginPage({
   registeredSubdomain,
   error,
   loading,
+  sectors,
+  sectorId,
   onChange,
   onSubmit,
   onSwitchMode,
@@ -73,6 +75,25 @@ export default function LoginPage({
               onChange={(e) => onChange('contactPhone', e.target.value)}
               required
             />
+
+            <label className="login-select">
+              <span>Secteur d'activite</span>
+              <select
+                value={sectorId}
+                onChange={(e) => onChange('sectorId', e.target.value)}
+                required
+                disabled={!sectors || sectors.length === 0}
+              >
+                <option value="">
+                  {sectors && sectors.length > 0 ? 'Choisir un secteur' : 'Aucun secteur disponible'}
+                </option>
+                {sectors?.map((sector) => (
+                  <option key={sector.id} value={sector.id}>
+                    {sector.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             <label className="login-file">
               <span>Logo</span>

@@ -6,6 +6,7 @@ import './TenantLayout.css'
 export default function TenantLayout({
   title,
   tenantName,
+  sectorLabel,
   userName,
   onLogout,
   onSelect,
@@ -27,6 +28,7 @@ export default function TenantLayout({
         <TenantNavbar
           title={title}
           tenantName={tenantName}
+          sectorLabel={sectorLabel}
           userName={userName}
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         />

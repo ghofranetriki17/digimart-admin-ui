@@ -49,6 +49,8 @@ export default function UsersPage({ token, tenantId }) {
 
   const isPlatformAdmin = tenantId === 1
   const canEditSelected = Boolean(selectedRoleId)
+  const isTemplateSelected = selectedRoleTenantId === 0
+  const vendorReadOnly = roleManagerTab === 'vendor' && isTemplateSelected
 
   const headers = useMemo(
     () => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }),
@@ -533,12 +535,14 @@ export default function UsersPage({ token, tenantId }) {
 
   return (
     <div className="users-page">
-      <header className="users-hero">
-        <div className="users-hero-title">
-          <h2>Gestion des Utilisateurs</h2>
-          <span className="users-hero-badge">TEAM ACCESS</span>
+      <header className="users-header">
+        <div className="users-hero">
+          <div className="users-hero-title">
+            <h2>Gestion des Utilisateurs</h2>
+            <span className="users-hero-badge">TEAM ACCESS</span>
+          </div>
+          <p>Gerez les acces de votre equipe, roles et permissions, sans complexite.</p>
         </div>
-        <p>Gerez les acces de votre equipe, roles et permissions, sans complexite.</p>
         <div className="users-hero-actions">
           <div className="users-view-toggle">
             <button
@@ -558,7 +562,12 @@ export default function UsersPage({ token, tenantId }) {
               <FaList />
             </button>
           </div>
-          <Button type="button" variant="secondary" onClick={openRoleManager} className="users-role-button">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={openRoleManager}
+            className="users-role-button"
+          >
             Roles & permissions
           </Button>
           <Button type="button" onClick={openCreate} className="users-add-button">
@@ -624,60 +633,126 @@ export default function UsersPage({ token, tenantId }) {
         title={editingId ? 'Modifier utilisateur' : 'Ajouter un utilisateur'}
         onClose={() => setModalOpen(false)}
       >
-        <form className="users-form" onSubmit={handleSubmit}>
-          <TextInput
-            label="Prenom"
-            value={form.firstName}
-            onChange={(e) => setForm((prev) => ({ ...prev, firstName: e.target.value }))}
-            required
-          />
-          <TextInput
-            label="Nom"
-            value={form.lastName}
-            onChange={(e) => setForm((prev) => ({ ...prev, lastName: e.target.value }))}
-            required
-          />
-          {!editingId ? (
-            <>
-              <TextInput
-                label="Email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+        <form className="users-form-modern" onSubmit={handleSubmit}>
+          <div className="form-grid">
+            <div className="form-group floating">
+              <input
+                type="text"
+                id="firstName"
+                value={form.firstName}
+                onChange={(e) => setForm((prev) => ({ ...prev, firstName: e.target.value }))}
                 required
+                className="form-input"
+                placeholder=" "
               />
-              <TextInput
-                label="Mot de passe"
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+              <label htmlFor="firstName" className="form-label">Prenom *</label>
+            </div>
+
+            <div className="form-group floating">
+              <input
+                type="text"
+                id="lastName"
+                value={form.lastName}
+                onChange={(e) => setForm((prev) => ({ ...prev, lastName: e.target.value }))}
                 required
+                className="form-input"
+                placeholder=" "
               />
-            </>
-          ) : null}
-          <TextInput
-            label="Telephone"
-            value={form.phone}
-            onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
-          />
-          <TextInput
-            label="Image URL"
-            value={form.imageUrl}
-            onChange={(e) => setForm((prev) => ({ ...prev, imageUrl: e.target.value }))}
-          />
-          <label className="users-toggle">
-            <input
-              type="checkbox"
-              checked={form.enabled}
-              onChange={(e) => setForm((prev) => ({ ...prev, enabled: e.target.checked }))}
-            />
-            Compte actif
-          </label>
-          <div className="users-form-actions">
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : editingId ? 'Mettre a jour' : 'Creer'}
+              <label htmlFor="lastName" className="form-label">Nom *</label>
+            </div>
+
+            {!editingId ? (
+              <>
+                <div className="form-group floating">
+                  <input
+                    type="email"
+                    id="email"
+                    value={form.email}
+                    onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+                    required
+                    className="form-input"
+                    placeholder=" "
+                  />
+                  <label htmlFor="email" className="form-label">Email *</label>
+                </div>
+
+                <div className="form-group floating">
+                  <input
+                    type="password"
+                    id="password"
+                    value={form.password}
+                    onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+                    required
+                    className="form-input"
+                    placeholder=" "
+                  />
+                  <label htmlFor="password" className="form-label">Mot de passe *</label>
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    aria-label="Afficher ou masquer le mot de passe"
+                    onClick={() => {
+                      const input = document.getElementById('password')
+                      if (input) {
+                        input.type = input.type === 'password' ? 'text' : 'password'
+                      }
+                    }}
+                  >
+                    Afficher
+                  </button>
+                </div>
+              </>
+            ) : null}
+
+            <div className="form-group floating">
+              <input
+                type="tel"
+                id="phone"
+                value={form.phone}
+                onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
+                className="form-input"
+                placeholder=" "
+              />
+              <label htmlFor="phone" className="form-label">Telephone</label>
+            </div>
+
+            <div className="form-group floating">
+              <input
+                type="url"
+                id="imageUrl"
+                value={form.imageUrl}
+                onChange={(e) => setForm((prev) => ({ ...prev, imageUrl: e.target.value }))}
+                className="form-input"
+                placeholder=" "
+              />
+              <label htmlFor="imageUrl" className="form-label">URL de l'image</label>
+            </div>
+          </div>
+
+          <div className="form-switch">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={form.enabled}
+                onChange={(e) => setForm((prev) => ({ ...prev, enabled: e.target.checked }))}
+                className="switch-input"
+              />
+              <span className="switch-slider" />
+              <span className="switch-label">Compte actif</span>
+            </label>
+            <span className="form-hint">L'utilisateur peut se connecter</span>
+          </div>
+
+          <div className="form-actions">
+            <Button type="submit" disabled={loading} className="primary-button">
+              {loading ? 'Enregistrement...' : editingId ? 'Mettre a jour' : 'Creer'}
             </Button>
-            <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setModalOpen(false)}
+              className="secondary-button"
+            >
               Annuler
             </Button>
           </div>
@@ -809,6 +884,7 @@ export default function UsersPage({ token, tenantId }) {
                         }}
                       >
                         <span>{role.label}</span>
+                        <span className="users-role-badge">Template</span>
                         <small>{role.permissions?.length || 0} permissions</small>
                       </button>
                     ))}
@@ -818,6 +894,9 @@ export default function UsersPage({ token, tenantId }) {
                       </div>
                     ) : null}
                   </div>
+                  <p className="users-hint users-template-hint">
+                    Templates en lecture seule. Cloner pour modifier.
+                  </p>
                 </div>
               </div>
 
@@ -825,18 +904,30 @@ export default function UsersPage({ token, tenantId }) {
                 <div className="users-role-step">2</div>
                 <div className="users-role-step-content">
                   <h4>Creer le role du tenant</h4>
-                  <TextInput
-                    label="Code du role"
-                    value={cloneCode}
-                    onChange={(e) => setCloneCode(e.target.value)}
-                  />
-                  <TextInput
-                    label="Label du role"
-                    value={cloneLabel}
-                    onChange={(e) => setCloneLabel(e.target.value)}
-                  />
+                  <div className="form-grid compact">
+                    <div className="form-group floating">
+                      <input
+                        type="text"
+                        value={cloneCode}
+                        onChange={(e) => setCloneCode(e.target.value)}
+                        className="form-input"
+                        placeholder=" "
+                      />
+                      <label className="form-label">Code du role</label>
+                    </div>
+                    <div className="form-group floating">
+                      <input
+                        type="text"
+                        value={cloneLabel}
+                        onChange={(e) => setCloneLabel(e.target.value)}
+                        className="form-input"
+                        placeholder=" "
+                      />
+                      <label className="form-label">Label du role</label>
+                    </div>
+                  </div>
                   <div className="users-role-actions">
-                    <Button type="button" onClick={cloneRole}>
+                    <Button type="button" onClick={cloneRole} className="primary-button">
                       Cloner ce template
                     </Button>
                     <Button type="button" variant="secondary" onClick={createTenantRole}>
@@ -875,23 +966,25 @@ export default function UsersPage({ token, tenantId }) {
                       </div>
                     ) : null}
                   </div>
-                  <div className="users-role-actions">
-                    <Button
-                      type="button"
-                      variant="danger"
-                      onClick={() => {
-                        if (!selectedRoleId) {
-                          setError('Selectionnez un role pour supprimer.')
-                          return
-                        }
-                        if (window.confirm('Supprimer ce role ?')) {
-                          handleDeleteRole(selectedRoleId)
-                        }
-                      }}
-                    >
-                      Supprimer le role selectionne
-                    </Button>
-                  </div>
+                  {selectedRoleTenantId === tenantId ? (
+                    <div className="users-role-actions">
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => {
+                          if (!selectedRoleId) {
+                            setError('Selectionnez un role pour supprimer.')
+                            return
+                          }
+                          if (window.confirm('Supprimer ce role ?')) {
+                            handleDeleteRole(selectedRoleId)
+                          }
+                        }}
+                      >
+                        Supprimer le role selectionne
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -908,17 +1001,27 @@ export default function UsersPage({ token, tenantId }) {
               </div>
               <div className="users-role-panel">
                 <h4>Creer un template</h4>
-                <TextInput
-                  label="Code"
-                  value={templateCode}
-                  onChange={(e) => setTemplateCode(e.target.value)}
-                />
-                <TextInput
-                  label="Label"
-                  value={templateLabel}
-                  onChange={(e) => setTemplateLabel(e.target.value)}
-                />
-                <Button type="button" onClick={createTemplate}>
+                <div className="form-group floating compact">
+                  <input
+                    type="text"
+                    value={templateCode}
+                    onChange={(e) => setTemplateCode(e.target.value)}
+                    className="form-input"
+                    placeholder=" "
+                  />
+                  <label className="form-label">Code *</label>
+                </div>
+                <div className="form-group floating compact">
+                  <input
+                    type="text"
+                    value={templateLabel}
+                    onChange={(e) => setTemplateLabel(e.target.value)}
+                    className="form-input"
+                    placeholder=" "
+                  />
+                  <label className="form-label">Label *</label>
+                </div>
+                <Button type="button" onClick={createTemplate} className="primary-button">
                   Creer template
                 </Button>
               </div>
@@ -952,6 +1055,12 @@ export default function UsersPage({ token, tenantId }) {
               </div>
               <span className="users-role-chip">Auto-sauvegarde</span>
             </div>
+            {vendorReadOnly ? (
+              <div className="users-template-notice">
+                <span className="users-role-badge">Template</span>
+                <span>Cloner pour modifier ce role.</span>
+              </div>
+            ) : null}
             {!canEditSelected ? (
               <p className="users-hint">
                 Selectionnez un role pour modifier ses permissions.
@@ -966,93 +1075,75 @@ export default function UsersPage({ token, tenantId }) {
                   onChange={(e) => setPermSearch(e.target.value)}
                 />
               </div>
-              <div className="users-permissions-actions">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={async () => {
-                    if (!canEditSelected || isUpdating) return
-                    setIsUpdating(true)
-                    const ok = await applyRolePermissions([])
-                    if (ok) {
-                      await loadRoles()
-                    }
-                    setIsUpdating(false)
-                  }}
-                  disabled={!canEditSelected || isUpdating}
-                >
-                  {isUpdating ? 'En cours...' : 'Tout effacer'}
-                </Button>
-              </div>
+              <div className="users-permissions-actions" />
             </div>
             <div className="users-role-inline">
-              <TextInput
-                label="Label du role"
-                value={selectedRoleLabel}
-                onChange={(e) => setSelectedRoleLabel(e.target.value)}
-                readOnly={!canEditSelected}
-              />
+              <div className="form-group floating compact">
+                <input
+                  type="text"
+                  value={selectedRoleLabel}
+                  onChange={(e) => setSelectedRoleLabel(e.target.value)}
+                  className="form-input"
+                  placeholder=" "
+                  readOnly={!canEditSelected}
+                />
+                <label className="form-label">Label du role</label>
+              </div>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={saveRoleLabel}
-                disabled={!canEditSelected}
+                disabled={!canEditSelected || vendorReadOnly}
+                className="secondary-button"
               >
-                Mettre a jour le label
+                Mettre a jour
               </Button>
             </div>
-            <div className="users-permissions-lists">
-              <div className="users-permissions-list">
-                <div className="users-permissions-list-title">Permissions disponibles</div>
-                {availablePermissions.length === 0 ? (
-                  <div className="users-role-empty">Aucune permission disponible.</div>
-                ) : (
-                  availablePermissions.map((permission) => (
-                    <div key={permission.code} className="users-permission-row">
-                      <div>
-                        <div className="users-permission-label">
-                          {permission.label || permission.code}
+            <div className="users-permissions-toggle-list">
+              {permissions.length === 0 ? (
+                <div className="users-role-empty">Aucune permission disponible.</div>
+              ) : (
+                permissions
+                  .filter((permission) => {
+                    const term = permSearch.trim().toLowerCase()
+                    if (!term) return true
+                    const label = permission.label || ''
+                    return (
+                      String(permission.code).toLowerCase().includes(term)
+                      || String(label).toLowerCase().includes(term)
+                    )
+                  })
+                  .sort((a, b) => String(a.code).localeCompare(String(b.code)))
+                  .map((permission) => {
+                    const checked = rolePermSelection.includes(permission.code)
+                    return (
+                      <label key={permission.code} className={`users-permission-toggle ${checked ? 'on' : ''}`}>
+                        <div className="users-permission-info">
+                          <div className="users-permission-label">
+                            {permission.label || permission.code}
+                          </div>
+                          <div className="users-permission-code">{permission.code}</div>
                         </div>
-                        <div className="users-permission-code">{permission.code}</div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => addPermission(permission.code)}
-                        disabled={!canEditSelected || isUpdating}
-                      >
-                        {isUpdating ? '...' : 'Ajouter'}
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="users-permissions-list">
-                <div className="users-permissions-list-title">Permissions du role</div>
-                {selectedPermissions.length === 0 ? (
-                  <div className="users-role-empty">Aucune permission liee.</div>
-                ) : (
-                  selectedPermissions.map((permission) => (
-                    <div key={permission.code} className="users-permission-row selected">
-                      <div>
-                        <div className="users-permission-label">
-                          {permission.label || permission.code}
-                        </div>
-                        <div className="users-permission-code">{permission.code}</div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        onClick={() => removePermission(permission.code)}
-                        disabled={!canEditSelected || isUpdating}
-                      >
-                        {isUpdating ? '...' : 'Supprimer'}
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </div>
+                        <span className="toggle-pill">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={!canEditSelected || isUpdating || vendorReadOnly}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                addPermission(permission.code)
+                              } else {
+                                removePermission(permission.code)
+                              }
+                            }}
+                          />
+                          <span className="toggle-track" />
+                          <span className="toggle-thumb" />
+                        </span>
+                      </label>
+                    )
+                  })
+              )}
             </div>
           </div>
         </div>

@@ -12,3 +12,11 @@
 .layout-main {
   padding: 24px;
 }
+
+.layout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.2);
+  border: none;
+  z-index: 25;
+}

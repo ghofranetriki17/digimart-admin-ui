@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './TenantSidebar.css'
 
 export default function TenantSidebar({
@@ -8,17 +8,37 @@ export default function TenantSidebar({
   onSelect,
   activeKey,
 }) {
-  const [openSections, setOpenSections] = useState({
-    catalog: true,
-    sales: true,
-    marketing: false,
-    growth: false,
-    appearance: false,
-    support: true,
-  })
+  const [openSection, setOpenSection] = useState('catalog')
+
+  useEffect(() => {
+    const sectionByKey = {
+      products: 'catalog',
+      categories: 'catalog',
+      'stock-alerts': 'catalog',
+      'stock-by-store': 'catalog',
+      orders: 'sales',
+      pos: 'sales',
+      stores: 'sales',
+      transactions: 'sales',
+      promotions: 'marketing',
+      automations: 'growth',
+      campaigns: 'growth',
+      notifications: 'growth',
+      themes: 'appearance',
+      marketplace: 'appearance',
+      digimartgpt: 'support',
+      documentation: 'support',
+      'help-center': 'support',
+      users: 'support',
+    }
+    const next = sectionByKey[activeKey]
+    if (next && next !== openSection) {
+      setOpenSection(next)
+    }
+  }, [activeKey])
 
   const toggleSection = (key) => {
-    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }))
+    setOpenSection(key)
   }
 
   return (
@@ -58,11 +78,11 @@ export default function TenantSidebar({
             onClick={() => toggleSection('catalog')}
           >
             Catalogue
-            <span className={`tenant-sidebar-chevron ${openSections.catalog ? 'open' : ''}`}>
+            <span className={`tenant-sidebar-chevron ${openSection === 'catalog' ? 'open' : ''}`}>
               v
             </span>
           </button>
-          {openSections.catalog ? (
+          {openSection === 'catalog' ? (
             <div className="tenant-sidebar-sublist">
               <button
                 type="button"
@@ -104,11 +124,11 @@ export default function TenantSidebar({
             onClick={() => toggleSection('sales')}
           >
             Ventes
-            <span className={`tenant-sidebar-chevron ${openSections.sales ? 'open' : ''}`}>
+            <span className={`tenant-sidebar-chevron ${openSection === 'sales' ? 'open' : ''}`}>
               v
             </span>
           </button>
-          {openSections.sales ? (
+          {openSection === 'sales' ? (
             <div className="tenant-sidebar-sublist">
               <button
                 type="button"
@@ -151,11 +171,11 @@ export default function TenantSidebar({
             onClick={() => toggleSection('marketing')}
           >
             Marketing
-            <span className={`tenant-sidebar-chevron ${openSections.marketing ? 'open' : ''}`}>
+            <span className={`tenant-sidebar-chevron ${openSection === 'marketing' ? 'open' : ''}`}>
               v
             </span>
           </button>
-          {openSections.marketing ? (
+          {openSection === 'marketing' ? (
             <div className="tenant-sidebar-sublist">
               <button
                 type="button"
@@ -175,11 +195,11 @@ export default function TenantSidebar({
             onClick={() => toggleSection('growth')}
           >
             Growth
-            <span className={`tenant-sidebar-chevron ${openSections.growth ? 'open' : ''}`}>
+            <span className={`tenant-sidebar-chevron ${openSection === 'growth' ? 'open' : ''}`}>
               v
             </span>
           </button>
-          {openSections.growth ? (
+          {openSection === 'growth' ? (
             <div className="tenant-sidebar-sublist">
               <button
                 type="button"
@@ -213,11 +233,11 @@ export default function TenantSidebar({
             onClick={() => toggleSection('appearance')}
           >
             Apparence
-            <span className={`tenant-sidebar-chevron ${openSections.appearance ? 'open' : ''}`}>
+            <span className={`tenant-sidebar-chevron ${openSection === 'appearance' ? 'open' : ''}`}>
               v
             </span>
           </button>
-          {openSections.appearance ? (
+          {openSection === 'appearance' ? (
             <div className="tenant-sidebar-sublist">
               <button
                 type="button"
@@ -244,11 +264,11 @@ export default function TenantSidebar({
             onClick={() => toggleSection('support')}
           >
             Support &amp; IA
-            <span className={`tenant-sidebar-chevron ${openSections.support ? 'open' : ''}`}>
+            <span className={`tenant-sidebar-chevron ${openSection === 'support' ? 'open' : ''}`}>
               v
             </span>
           </button>
-          {openSections.support ? (
+          {openSection === 'support' ? (
             <div className="tenant-sidebar-sublist">
               <button
                 type="button"
