@@ -57,13 +57,25 @@ export default function AdminTenantsPage({ token }) {
   const activate = async (tenantId, planId) => {
     if (!planId) return
     setRowLoading((prev) => ({ ...prev, [tenantId]: true }))
-    await fetch(`/api/admin/tenants/${tenantId}/subscriptions/activate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...auth },
-      body: JSON.stringify({ planId: Number(planId) }),
-    })
-    setRowLoading((prev) => ({ ...prev, [tenantId]: false }))
-    await load()
+    try {
+      const res = await fetch(`/api/admin/tenants/${tenantId}/subscriptions/activate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...auth },
+        body: JSON.stringify({ planId: Number(planId) }),
+      })
+
+      if (!res.ok) {
+        const body = await res.text()
+        const msg = `Activation failed (${res.status}). ${body || 'No response body.'}`
+        console.error(msg)
+        setError(msg)
+        return
+      }
+
+      await load()
+    } finally {
+      setRowLoading((prev) => ({ ...prev, [tenantId]: false }))
+    }
   }
 
   return (
