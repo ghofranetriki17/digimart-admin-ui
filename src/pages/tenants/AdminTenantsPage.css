@@ -1,0 +1,215 @@
+.admin-tenants-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-tenants-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.admin-hero-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.admin-tenants-hero h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.admin-tenants-hero p {
+  margin: 0;
+  color: var(--ink-500);
+}
+
+.admin-hero-badge {
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--warm-soft);
+  color: #9a3412;
+  font-weight: 600;
+}
+
+.admin-tenants-status,
+.admin-tenants-error {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.admin-tenants-status {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.admin-tenants-error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.admin-tenants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.tenant-card {
+  background: #ffffff;
+  border: 1px solid var(--border-200);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.tenant-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tenant-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-tenant-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink-900);
+}
+
+.admin-tenant-sub {
+  color: var(--ink-500);
+  font-size: 12px;
+}
+
+.tenant-plan-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tenant-plan-pill.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tenant-plan-pill.inactive {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.tenant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tenant-current {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-200);
+  border: 1px dashed var(--border-200);
+}
+
+.tenant-label {
+  font-size: 12px;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tenant-planlist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tenant-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-200);
+  background: #ffffff;
+  padding: 8px 12px;
+  font-weight: 700;
+  color: var(--ink-700);
+  transition: all 0.15s ease;
+}
+
+.tenant-toggle .toggle-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: inline-block;
+  transition: all 0.15s ease;
+}
+
+.tenant-toggle.on {
+  background: #ecfdf3;
+  border-color: #bbf7d0;
+  color: #166534;
+  box-shadow: 0 8px 18px rgba(22, 101, 52, 0.12);
+}
+
+.tenant-toggle.on .toggle-dot {
+  background: #22c55e;
+}
+
+.tenant-toggle.off:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+.toggle-label {
+  white-space: nowrap;
+}
+
+.tenant-row-loading {
+  font-size: 12px;
+  color: var(--ink-500);
+}
+
+.admin-tenants-empty {
+  grid-column: 1 / -1;
+  padding: 14px;
+  color: var(--ink-500);
+  border: 1px dashed var(--border-200);
+  border-radius: 14px;
+  text-align: center;
+  background: #f8fafc;
+}
+
+@media (max-width: 700px) {
+  .admin-tenants-page {
+    padding: 16px;
+  }
+
+  .tenant-card {
+    border-radius: 16px;
+  }
+}

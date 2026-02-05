@@ -6,6 +6,11 @@ import DashboardPage from './pages/dashboard/DashboardPage'
 import StoresPage from './pages/stores/StoresPage'
 import UsersPage from './pages/users/UsersPage'
 import SectorsPage from './pages/sectors/SectorsPage'
+import PlatformConfigPage from './pages/billing/PlatformConfigPage'
+import PlansPage from './pages/billing/PlansPage'
+import WalletPage from './pages/billing/WalletPage'
+import SubscriptionPage from './pages/billing/SubscriptionPage'
+import AdminTenantsPage from './pages/tenants/AdminTenantsPage'
 
 const STORAGE_KEY = 'digimart.auth'
 const REGISTER_KEY = 'digimart.register'
@@ -35,6 +40,9 @@ function App() {
   const [userId, setUserId] = useState(null)
   const [tenantPage, setTenantPage] = useState('dashboard')
   const [adminPage, setAdminPage] = useState('dashboard')
+  const [planName, setPlanName] = useState('')
+  const [walletBalance, setWalletBalance] = useState(null)
+  const [walletCurrency, setWalletCurrency] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -109,6 +117,46 @@ function App() {
     const sector = sectors.find((item) => item.id === tenantSectorId)
     setSectorLabel(sector ? sector.label : '')
   }, [tenantSectorId, sectors])
+
+  useEffect(() => {
+    const loadBilling = async () => {
+      if (!token || !tenantId) {
+        setPlanName('')
+        setWalletBalance(null)
+        setWalletCurrency('')
+        return
+      }
+      try {
+        const [subRes, walletRes] = await Promise.all([
+          fetch(`/api/tenants/${tenantId}/subscriptions/current`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`/api/tenants/${tenantId}/wallet`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ])
+        if (subRes.ok) {
+          const sub = await subRes.json()
+          setPlanName(sub.planName || sub.planCode || '')
+        } else {
+          setPlanName('Aucun plan')
+        }
+        if (walletRes.ok) {
+          const w = await walletRes.json()
+          setWalletBalance(w.balance)
+          setWalletCurrency(w.currency)
+        } else {
+          setWalletBalance(null)
+          setWalletCurrency('')
+        }
+      } catch {
+        setPlanName('')
+        setWalletBalance(null)
+        setWalletCurrency('')
+      }
+    }
+    loadBilling()
+  }, [token, tenantId])
 
   const saveSession = (next) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
@@ -387,6 +435,12 @@ function App() {
             <SectorsPage token={token} />
           ) : adminPage === 'stores' ? (
             <StoresPage token={token} tenantId={tenantId} />
+          ) : adminPage === 'billing-config' ? (
+            <PlatformConfigPage token={token} />
+          ) : adminPage === 'billing-plans' ? (
+            <PlansPage token={token} />
+          ) : adminPage === 'admin-tenants' ? (
+            <AdminTenantsPage token={token} />
           ) : (
             <DashboardPage
               userName={userName}
@@ -404,6 +458,9 @@ function App() {
         tenantName={tenantName}
         sectorLabel={sectorLabel}
         userName={userName}
+        planName={planName}
+        walletBalance={walletBalance}
+        walletCurrency={walletCurrency}
         onLogout={clearSession}
         onSelect={(key) => setTenantPage(key)}
         activeKey={tenantPage}
@@ -412,6 +469,10 @@ function App() {
           <StoresPage token={token} tenantId={tenantId} />
         ) : tenantPage === 'users' ? (
           <UsersPage token={token} tenantId={tenantId} />
+        ) : tenantPage === 'wallet' ? (
+          <WalletPage token={token} tenantId={tenantId} />
+        ) : tenantPage === 'subscription' ? (
+          <SubscriptionPage token={token} tenantId={tenantId} />
         ) : (
           <DashboardPage
             userName={userName}

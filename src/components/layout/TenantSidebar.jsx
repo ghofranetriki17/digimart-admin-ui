@@ -20,6 +20,8 @@ export default function TenantSidebar({
       pos: 'sales',
       stores: 'sales',
       transactions: 'sales',
+      wallet: 'billing',
+      subscription: 'billing',
       promotions: 'marketing',
       automations: 'growth',
       campaigns: 'growth',
@@ -159,6 +161,37 @@ export default function TenantSidebar({
                 onClick={() => onSelect?.('transactions')}
               >
                 Transactions
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="tenant-sidebar-section">
+          <button
+            type="button"
+            className="tenant-sidebar-section-title toggle"
+            onClick={() => toggleSection('billing')}
+          >
+            Billing
+            <span className={`tenant-sidebar-chevron ${openSection === 'billing' ? 'open' : ''}`}>
+              v
+            </span>
+          </button>
+          {openSection === 'billing' ? (
+            <div className="tenant-sidebar-sublist">
+              <button
+                type="button"
+                className={`tenant-sidebar-link ${activeKey === 'wallet' ? 'active' : ''}`}
+                onClick={() => onSelect?.('wallet')}
+              >
+                Wallet
+              </button>
+              <button
+                type="button"
+                className={`tenant-sidebar-link ${activeKey === 'subscription' ? 'active' : ''}`}
+                onClick={() => onSelect?.('subscription')}
+              >
+                Abonnement
               </button>
             </div>
           ) : null}

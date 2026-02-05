@@ -52,6 +52,27 @@ export default function Sidebar({ open, onClose, onLogout, onSelect, activeKey }
           >
             Secteurs
           </button>
+          <button
+            type="button"
+            className={`sidebar-link ${activeKey === 'billing-config' ? 'active' : ''}`}
+            onClick={() => onSelect?.('billing-config')}
+          >
+            Billing Config
+          </button>
+          <button
+            type="button"
+            className={`sidebar-link ${activeKey === 'billing-plans' ? 'active' : ''}`}
+            onClick={() => onSelect?.('billing-plans')}
+          >
+            Plans &amp; Features
+          </button>
+          <button
+            type="button"
+            className={`sidebar-link ${activeKey === 'admin-tenants' ? 'active' : ''}`}
+            onClick={() => onSelect?.('admin-tenants')}
+          >
+            Tenants
+          </button>
         </div>
       </nav>
 

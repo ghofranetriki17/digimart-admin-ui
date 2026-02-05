@@ -5,6 +5,9 @@ export default function TenantNavbar({
   tenantName,
   sectorLabel,
   userName,
+  planName,
+  walletBalance,
+  walletCurrency,
   onToggleSidebar,
 }) {
   const initials = userName
@@ -33,7 +36,17 @@ export default function TenantNavbar({
             <span className="tenant-navbar-tenant">{tenantName}</span>
             {sectorLabel ? (
               <span className="tenant-navbar-sector">{sectorLabel}</span>
-            ) : `hi`}
+            ) : null}
+            {planName ? (
+              <span className="tenant-navbar-plan">
+                {planName}
+              </span>
+            ) : null}
+            {walletBalance !== undefined && walletBalance !== null ? (
+              <span className="tenant-navbar-wallet">
+                {walletBalance} {walletCurrency || ''}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>

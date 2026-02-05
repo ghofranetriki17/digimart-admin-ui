@@ -8,6 +8,9 @@ export default function TenantLayout({
   tenantName,
   sectorLabel,
   userName,
+  planName,
+  walletBalance,
+  walletCurrency,
   onLogout,
   onSelect,
   activeKey,
@@ -30,6 +33,9 @@ export default function TenantLayout({
           tenantName={tenantName}
           sectorLabel={sectorLabel}
           userName={userName}
+          planName={planName}
+          walletBalance={walletBalance}
+          walletCurrency={walletCurrency}
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         />
         <main className="tenant-layout-main">{children}</main>

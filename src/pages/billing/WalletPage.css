@@ -1,0 +1,135 @@
+.wallet-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wallet-header h2 {
+  margin: 0;
+}
+
+.wallet-header p {
+  margin: 4px 0 0;
+  color: #6b7280;
+}
+
+.wallet-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.wallet-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.wallet-status,
+.wallet-error {
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.wallet-status {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.wallet-error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.wallet-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.wallet-label {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.wallet-amount {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.wallet-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.status-active {
+  background: #ecfdf3;
+  color: #15803d;
+}
+.status-frozen,
+.status-suspended {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.wallet-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.wallet-table {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.wallet-table-head,
+.wallet-table-row {
+  display: grid;
+  grid-template-columns: 130px 120px 100px 100px 100px 1fr 120px;
+  gap: 8px;
+  padding: 10px 12px;
+  align-items: center;
+}
+
+.wallet-table-head {
+  background: #f9fafb;
+  font-weight: 700;
+}
+
+.wallet-table-row:nth-child(even) {
+  background: #f9fafb;
+}
+
+.wallet-empty {
+  padding: 12px;
+  color: #9ca3af;
+}
+
+@media (max-width: 900px) {
+  .wallet-table-head,
+  .wallet-table-row {
+    grid-template-columns: 1fr;
+  }
+}
