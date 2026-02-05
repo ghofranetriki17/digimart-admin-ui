@@ -1,6 +1,28 @@
+﻿import { useEffect, useState } from 'react'
 import './Sidebar.css'
 
 export default function Sidebar({ open, onClose, onLogout, onSelect, activeKey }) {
+  const [openSection, setOpenSection] = useState('overview')
+
+  useEffect(() => {
+    const sectionByKey = {
+      dashboard: 'overview',
+      users: 'operations',
+      stores: 'operations',
+      sectors: 'operations',
+      'admin-tenants': 'operations',
+      'billing-config': 'billing',
+      'billing-plans': 'billing',
+    }
+    const next = sectionByKey[activeKey]
+    if (!next) return
+    setOpenSection((prev) => (prev === next ? prev : next))
+  }, [activeKey])
+
+  const toggleSection = (key) => {
+    setOpenSection((prev) => (prev === key ? '' : key))
+  }
+
   return (
     <aside className={`sidebar ${open ? 'is-open' : ''}`}>
       <div className="sidebar-header">
@@ -23,56 +45,103 @@ export default function Sidebar({ open, onClose, onLogout, onSelect, activeKey }
 
       <nav className="sidebar-nav">
         <div className="sidebar-section">
-          <div className="sidebar-section-label">Administration</div>
           <button
             type="button"
-            className={`sidebar-link ${activeKey === 'dashboard' ? 'active' : ''}`}
-            onClick={() => onSelect?.('dashboard')}
+            className="sidebar-section-title toggle"
+            onClick={() => toggleSection('overview')}
           >
-            Dashboard
+            Vue d'ensemble
+            <span className={`sidebar-chevron ${openSection === 'overview' ? 'open' : ''}`}>
+              v
+            </span>
           </button>
+          {openSection === 'overview' ? (
+            <div className="sidebar-sublist">
+              <button
+                type="button"
+                className={`sidebar-link ${activeKey === 'dashboard' ? 'active' : ''}`}
+                onClick={() => onSelect?.('dashboard')}
+              >
+                Tableau de bord
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="sidebar-section">
           <button
             type="button"
-            className={`sidebar-link ${activeKey === 'users' ? 'active' : ''}`}
-            onClick={() => onSelect?.('users')}
+            className="sidebar-section-title toggle"
+            onClick={() => toggleSection('operations')}
           >
-            Utilisateurs
+            Operations
+            <span className={`sidebar-chevron ${openSection === 'operations' ? 'open' : ''}`}>
+              v
+            </span>
           </button>
+          {openSection === 'operations' ? (
+            <div className="sidebar-sublist">
+              <button
+                type="button"
+                className={`sidebar-link ${activeKey === 'users' ? 'active' : ''}`}
+                onClick={() => onSelect?.('users')}
+              >
+                Utilisateurs
+              </button>
+              <button
+                type="button"
+                className={`sidebar-link ${activeKey === 'stores' ? 'active' : ''}`}
+                onClick={() => onSelect?.('stores')}
+              >
+                Magasins
+              </button>
+              <button
+                type="button"
+                className={`sidebar-link ${activeKey === 'sectors' ? 'active' : ''}`}
+                onClick={() => onSelect?.('sectors')}
+              >
+                Secteurs
+              </button>
+              <button
+                type="button"
+                className={`sidebar-link ${activeKey === 'admin-tenants' ? 'active' : ''}`}
+                onClick={() => onSelect?.('admin-tenants')}
+              >
+                Tenants
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="sidebar-section">
           <button
             type="button"
-            className={`sidebar-link ${activeKey === 'stores' ? 'active' : ''}`}
-            onClick={() => onSelect?.('stores')}
+            className="sidebar-section-title toggle"
+            onClick={() => toggleSection('billing')}
           >
-            Magasins
+            Billing
+            <span className={`sidebar-chevron ${openSection === 'billing' ? 'open' : ''}`}>
+              v
+            </span>
           </button>
-          <button
-            type="button"
-            className={`sidebar-link ${activeKey === 'sectors' ? 'active' : ''}`}
-            onClick={() => onSelect?.('sectors')}
-          >
-            Secteurs
-          </button>
-          <button
-            type="button"
-            className={`sidebar-link ${activeKey === 'billing-config' ? 'active' : ''}`}
-            onClick={() => onSelect?.('billing-config')}
-          >
-            Billing Config
-          </button>
-          <button
-            type="button"
-            className={`sidebar-link ${activeKey === 'billing-plans' ? 'active' : ''}`}
-            onClick={() => onSelect?.('billing-plans')}
-          >
-            Plans &amp; Features
-          </button>
-          <button
-            type="button"
-            className={`sidebar-link ${activeKey === 'admin-tenants' ? 'active' : ''}`}
-            onClick={() => onSelect?.('admin-tenants')}
-          >
-            Tenants
-          </button>
+          {openSection === 'billing' ? (
+            <div className="sidebar-sublist">
+              <button
+                type="button"
+                className={`sidebar-link ${activeKey === 'billing-config' ? 'active' : ''}`}
+                onClick={() => onSelect?.('billing-config')}
+              >
+                Billing config
+              </button>
+              <button
+                type="button"
+                className={`sidebar-link ${activeKey === 'billing-plans' ? 'active' : ''}`}
+                onClick={() => onSelect?.('billing-plans')}
+              >
+                Plans &amp; features
+              </button>
+            </div>
+          ) : null}
         </div>
       </nav>
 

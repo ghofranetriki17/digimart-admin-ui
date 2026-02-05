@@ -1,4 +1,4 @@
-.sidebar {
+﻿.sidebar {
   width: 260px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   color: #0f172a;
@@ -79,6 +79,40 @@
   text-transform: uppercase;
   color: #94a3b8;
   padding: 0 4px;
+}
+
+.sidebar-section-title {
+  text-align: left;
+  background: transparent;
+  color: #1f2937;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-section-title.toggle:hover {
+  background: #f1f5f9;
+}
+
+.sidebar-chevron {
+  font-size: 12px;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-chevron.open {
+  transform: rotate(180deg);
+}
+
+.sidebar-sublist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 8px;
 }
 
 .sidebar-link {
