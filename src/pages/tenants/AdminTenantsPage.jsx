@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import {
   FaChevronLeft,
   FaEnvelope,
@@ -14,7 +14,16 @@ import {
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import Modal from '../../components/ui/Modal'
+import Button from '../../components/atoms/Button'
+import EmptyState from '../../components/atoms/EmptyState'
+import Modal from '../../components/atoms/Modal'
+import SearchInput from '../../components/atoms/SearchInput'
+import TextInput from '../../components/atoms/TextInput'
+import CardGrid from '../../components/molecules/CardGrid'
+import FilterBar from '../../components/molecules/FilterBar'
+import StatsGrid from '../../components/molecules/StatsGrid'
+import ViewToggle from '../../components/molecules/ViewToggle'
+import StandardPage from '../../templates/StandardPage'
 import './AdminTenantsPage.css'
 
 const markerIcon = new L.Icon({
@@ -26,6 +35,8 @@ const markerIcon = new L.Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 })
+
+const FALLBACK_CENTER = [34.8, 10.2]
 
 export default function AdminTenantsPage({ token }) {
   const [tenants, setTenants] = useState([])
@@ -42,7 +53,17 @@ export default function AdminTenantsPage({ token }) {
   const [selectedTenant, setSelectedTenant] = useState(null)
   const [tenantDetails, setTenantDetails] = useState(null)
   const [tenantUsers, setTenantUsers] = useState([])
+  const [showStaff, setShowStaff] = useState(true)
   const [tenantStores, setTenantStores] = useState([])
+  const [tenantWallet, setTenantWallet] = useState(null)
+  const [tenantTxns, setTenantTxns] = useState([])
+  const [walletMode, setWalletMode] = useState('CREDIT')
+  const [walletAmount, setWalletAmount] = useState('')
+  const [walletReason, setWalletReason] = useState('')
+  const [walletReference, setWalletReference] = useState('')
+  const [walletLoading, setWalletLoading] = useState(false)
+  const [walletProcessing, setWalletProcessing] = useState(false)
+  const [walletError, setWalletError] = useState('')
   const [storeDetailOpen, setStoreDetailOpen] = useState(false)
   const [storeDetail, setStoreDetail] = useState(null)
   const [storeMapExpanded, setStoreMapExpanded] = useState(false)
@@ -141,10 +162,35 @@ export default function AdminTenantsPage({ token }) {
       if (!tenantRes.ok && !usersRes.ok && !storesRes.ok) {
         setDetailError('Impossible de charger les details du tenant')
       }
+
+      await loadTenantWallet(tenantId)
     } catch (err) {
       setDetailError(err.message || 'Impossible de charger les details du tenant')
     } finally {
       setDetailLoading(false)
+    }
+  }
+
+  const loadTenantWallet = async (tenantId) => {
+    if (!tenantId) return
+    setWalletLoading(true)
+    setWalletError('')
+    try {
+      const walletRes = await fetch(`/api/tenants/${tenantId}/wallet`, { headers: auth })
+      if (!walletRes.ok) {
+        throw new Error('Wallet introuvable')
+      }
+      const walletData = await walletRes.json()
+      setTenantWallet(walletData)
+      const txRes = await fetch(`/api/tenants/${tenantId}/wallet/transactions`, { headers: auth })
+      const txData = txRes.ok ? await txRes.json() : []
+      setTenantTxns(Array.isArray(txData) ? txData : [])
+    } catch (err) {
+      setTenantWallet(null)
+      setTenantTxns([])
+      setWalletError(err.message || 'Impossible de charger le wallet')
+    } finally {
+      setWalletLoading(false)
     }
   }
 
@@ -208,12 +254,51 @@ export default function AdminTenantsPage({ token }) {
     setTenantUsers([])
     setTenantStores([])
     setDetailError('')
+    setTenantWallet(null)
+    setTenantTxns([])
+    setWalletError('')
+    setWalletAmount('')
+    setWalletReason('')
+    setWalletReference('')
+    setWalletMode('CREDIT')
+    setShowStaff(true)
   }
 
   const openStoreDetails = (store) => {
     setStoreDetail(store)
     setStoreDetailOpen(true)
     setStoreMapExpanded(false)
+  }
+
+  const submitWalletAdjustment = async () => {
+    if (!selectedTenantId) return
+    if (!walletAmount) {
+      setWalletError('Montant requis')
+      return
+    }
+    setWalletProcessing(true)
+    setWalletError('')
+    try {
+      const endpoint = walletMode === 'DEBIT' ? 'debit' : 'credit'
+      const res = await fetch(`/api/tenants/${selectedTenantId}/wallet/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...auth },
+        body: JSON.stringify({
+          amount: parseFloat(walletAmount || '0'),
+          reason: walletReason,
+          reference: walletReference,
+        }),
+      })
+      if (!res.ok) throw new Error('Operation impossible')
+      setWalletAmount('')
+      setWalletReason('')
+      setWalletReference('')
+      await loadTenantWallet(selectedTenantId)
+    } catch (err) {
+      setWalletError(err.message || 'Operation impossible')
+    } finally {
+      setWalletProcessing(false)
+    }
   }
 
   const closeStoreDetails = () => {
@@ -253,6 +338,8 @@ export default function AdminTenantsPage({ token }) {
   const summaryTenant = tenantDetails || selectedTenant || {}
   const currentPlan = selectedTenantId ? subStatus[selectedTenantId] : null
   const usersActiveCount = tenantUsers.filter((user) => user.enabled).length
+  const owners = tenantUsers.filter((user) => roleLabel(user) === 'OWNER')
+  const staffMembers = tenantUsers.filter((user) => roleLabel(user) !== 'OWNER')
   const storesWithCoords = useMemo(
     () =>
       tenantStores.filter((store) => {
@@ -262,9 +349,8 @@ export default function AdminTenantsPage({ token }) {
       }),
     [tenantStores],
   )
-  const fallbackCenter = [34.8, 10.2]
   const mapCenter = useMemo(() => {
-    if (storesWithCoords.length === 0) return fallbackCenter
+    if (storesWithCoords.length === 0) return FALLBACK_CENTER
     const sum = storesWithCoords.reduce(
       (acc, store) => {
         const lat = Number(store.latitude)
@@ -297,38 +383,26 @@ export default function AdminTenantsPage({ token }) {
     : ''
 
   return (
-    <div className="admin-tenants-page">
-      <header className="admin-tenants-header">
-        <div className="admin-tenants-hero">
-          <div className="admin-hero-title">
-            <h2>Tenants & abonnements</h2>
-            <span className="admin-hero-badge">SUPER ADMIN</span>
-          </div>
-          <p>Gerez les tenants, leurs abonnements et accedez aux details en un clic.</p>
-        </div>
-        {!selectedTenantId ? (
+    <StandardPage
+      className="admin-tenants-page"
+      title="Tenants & abonnements"
+      badge="SUPER ADMIN"
+      subtitle="Gerez les tenants, leurs abonnements et accedez aux details en un clic."
+      actions={(
+        !selectedTenantId ? (
           <div className="admin-tenants-hero-actions">
-            <div className="admin-tenants-view-toggle">
-              <button
-                type="button"
-                className={`admin-tenants-view-button ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
-                aria-label="Vue grille"
-              >
-                <FaThLarge />
-              </button>
-              <button
-                type="button"
-                className={`admin-tenants-view-button ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
-                aria-label="Vue liste"
-              >
-                <FaList />
-              </button>
-            </div>
+            <ViewToggle
+              value={viewMode}
+              onChange={setViewMode}
+              options={[
+                { value: 'grid', label: 'Vue grille', icon: <FaThLarge />, ariaLabel: 'Vue grille' },
+                { value: 'list', label: 'Vue liste', icon: <FaList />, ariaLabel: 'Vue liste' },
+              ]}
+            />
           </div>
-        ) : null}
-      </header>
+        ) : null
+      )}
+    >
 
       {loading ? <div className="admin-tenants-status">Chargement...</div> : null}
       {error ? <div className="admin-tenants-error">{error}</div> : null}
@@ -485,25 +559,61 @@ export default function AdminTenantsPage({ token }) {
               <h3>Utilisateurs</h3>
               <span className="tenant-details-section-count">{tenantUsers.length} total</span>
             </div>
-            <div className="tenant-users-grid">
-              {tenantUsers.map((user) => (
-                <div key={user.id} className="tenant-user-card">
-                  <div className="tenant-user-avatar">
-                    {initialsFor(`${user.firstName || ''} ${user.lastName || ''}`)}
-                  </div>
-                  <div className="tenant-user-info">
-                    <div className="tenant-user-name">
-                      {user.firstName || 'User'} {user.lastName || ''}
+            {owners.length === 0 ? (
+              <div className="admin-tenants-empty">Aucun owner defini pour ce tenant.</div>
+            ) : (
+              <div className="tenant-users-grid">
+                {owners.map((user) => (
+                  <div key={user.id} className="tenant-user-card owner">
+                    <div className="tenant-user-avatar">
+                      {initialsFor(`${user.firstName || ''} ${user.lastName || ''}`)}
                     </div>
-                    <div className="tenant-user-email">{user.email || '---'}</div>
+                    <div className="tenant-user-info">
+                      <div className="tenant-user-name">
+                        {user.firstName || 'User'} {user.lastName || ''}
+                      </div>
+                      <div className="tenant-user-email">{user.email || '---'}</div>
+                    </div>
+                    <span className={`tenant-user-role ${roleLabel(user).toLowerCase()}`}>
+                      {roleLabel(user)}
+                    </span>
                   </div>
-                  <span className={`tenant-user-role ${roleLabel(user).toLowerCase()}`}>
-                    {roleLabel(user)}
-                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="tenant-staff">
+              <button
+                type="button"
+                className="tenant-staff-toggle"
+                onClick={() => setShowStaff((prev) => !prev)}
+                aria-expanded={showStaff}
+              >
+                Equipe ({staffMembers.length})
+                <span className={`tenant-staff-chevron ${showStaff ? 'open' : ''}`}>v</span>
+              </button>
+              {showStaff ? (
+                <div className="tenant-users-grid">
+                  {staffMembers.map((user) => (
+                    <div key={user.id} className="tenant-user-card">
+                      <div className="tenant-user-avatar">
+                        {initialsFor(`${user.firstName || ''} ${user.lastName || ''}`)}
+                      </div>
+                      <div className="tenant-user-info">
+                        <div className="tenant-user-name">
+                          {user.firstName || 'User'} {user.lastName || ''}
+                        </div>
+                        <div className="tenant-user-email">{user.email || '---'}</div>
+                      </div>
+                      <span className={`tenant-user-role ${roleLabel(user).toLowerCase()}`}>
+                        {roleLabel(user)}
+                      </span>
+                    </div>
+                  ))}
+                  {staffMembers.length === 0 ? (
+                    <div className="admin-tenants-empty">Aucun membre d'equipe.</div>
+                  ) : null}
                 </div>
-              ))}
-              {tenantUsers.length === 0 ? (
-                <div className="admin-tenants-empty">Aucun utilisateur pour ce tenant.</div>
               ) : null}
             </div>
           </div>
@@ -634,6 +744,124 @@ export default function AdminTenantsPage({ token }) {
               </div>
             </div>
           </div>
+
+          <div className="tenant-details-section">
+            <div className="tenant-details-section-header">
+              <h3>Wallet</h3>
+              <span className="tenant-details-section-count">
+                {tenantWallet?.currency || ''}
+              </span>
+            </div>
+            {walletLoading ? (
+              <div className="tenant-wallet-status">Chargement...</div>
+            ) : null}
+            {walletError ? (
+              <div className="tenant-wallet-error">{walletError}</div>
+            ) : null}
+            {tenantWallet ? (
+              <div className="tenant-wallet-summary">
+                <div>
+                  <div className="tenant-wallet-label">Solde</div>
+                  <div className="tenant-wallet-amount">
+                    {tenantWallet.balance} {tenantWallet.currency}
+                  </div>
+                </div>
+                <div>
+                  <div className="tenant-wallet-label">Statut</div>
+                  <div
+                    className={`tenant-wallet-pill status-${tenantWallet.status?.toLowerCase()}`}
+                  >
+                    {tenantWallet.status}
+                  </div>
+                </div>
+                <div>
+                  <div className="tenant-wallet-label">Derniere transaction</div>
+                  <div>{tenantWallet.lastTransactionAt || '—'}</div>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="tenant-wallet-actions">
+              <label className="tenant-wallet-toggle">
+                <input
+                  type="radio"
+                  name="walletMode"
+                  value="CREDIT"
+                  checked={walletMode === 'CREDIT'}
+                  onChange={() => setWalletMode('CREDIT')}
+                />
+                Crediter
+              </label>
+              <label className="tenant-wallet-toggle">
+                <input
+                  type="radio"
+                  name="walletMode"
+                  value="DEBIT"
+                  checked={walletMode === 'DEBIT'}
+                  onChange={() => setWalletMode('DEBIT')}
+                />
+                Debiter
+              </label>
+            </div>
+
+            <div className="tenant-wallet-form">
+              <TextInput
+                label="Montant"
+                type="number"
+                step="0.01"
+                value={walletAmount}
+                onChange={(e) => setWalletAmount(e.target.value)}
+              />
+              <TextInput
+                label="Raison"
+                value={walletReason}
+                onChange={(e) => setWalletReason(e.target.value)}
+              />
+              <TextInput
+                label="Reference"
+                value={walletReference}
+                onChange={(e) => setWalletReference(e.target.value)}
+              />
+              <Button
+                variant="primary"
+                disabled={walletProcessing}
+                onClick={submitWalletAdjustment}
+              >
+                {walletProcessing
+                  ? 'Traitement...'
+                  : walletMode === 'DEBIT'
+                    ? 'Debiter'
+                    : 'Crediter'}
+              </Button>
+            </div>
+
+            <div className="tenant-wallet-table">
+              <div className="tenant-wallet-table-head">
+                <div>Date</div>
+                <div>Type</div>
+                <div>Montant</div>
+                <div>Avant</div>
+                <div>Apres</div>
+                <div>Raison</div>
+                <div>Ref</div>
+              </div>
+              {tenantTxns.map((txn) => (
+                <div key={txn.id} className="tenant-wallet-table-row">
+                  <div>{txn.transactionDate}</div>
+                  <div>{txn.type}</div>
+                  <div>{txn.amount}</div>
+                  <div>{txn.balanceBefore}</div>
+                  <div>{txn.balanceAfter}</div>
+                  <div>{txn.reason}</div>
+                  <div>{txn.reference || '—'}</div>
+                </div>
+              ))}
+              {tenantTxns.length === 0 ? (
+                <div className="tenant-wallet-empty">Aucune transaction</div>
+              ) : null}
+            </div>
+          </div>
+
           <Modal
             open={storeDetailOpen}
             title={storeDetail?.name || 'Details du magasin'}
@@ -789,7 +1017,7 @@ export default function AdminTenantsPage({ token }) {
                   ) : (
                     <MapContainer
                       className="store-detail-map-frame"
-                      center={fallbackCenter}
+                      center={FALLBACK_CENTER}
                       zoom={6}
                       scrollWheelZoom={false}
                     >
@@ -812,32 +1040,27 @@ export default function AdminTenantsPage({ token }) {
       ) : (
         <>
           <div className="admin-tenants-toolbar">
-            <div className="admin-tenants-stats">
-              <div className="admin-stat-card">
-                <div className="admin-stat-label">Tenants</div>
-                <div className="admin-stat-value">{totalCount}</div>
-              </div>
-              <div className="admin-stat-card">
-                <div className="admin-stat-label">Actifs</div>
-                <div className="admin-stat-value">{activeCount}</div>
-              </div>
-              <div className="admin-stat-card">
-                <div className="admin-stat-label">Sans plan</div>
-                <div className="admin-stat-value">{withoutPlanCount}</div>
-              </div>
-            </div>
+            <StatsGrid
+              className="admin-tenants-stats"
+              items={[
+                { key: 'total', label: 'Tenants', value: totalCount },
+                { key: 'active', label: 'Actifs', value: activeCount },
+                { key: 'noplan', label: 'Sans plan', value: withoutPlanCount },
+              ]}
+              cardClassName="admin-stat-card"
+              labelClassName="admin-stat-label"
+              valueClassName="admin-stat-value"
+            />
           </div>
 
-          <div className="admin-tenants-filters">
-            <div className="admin-tenants-search">
-              <input
-                type="search"
-                placeholder="Rechercher par nom ou sous-domaine..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <div className="admin-tenants-filter-group">
+          <FilterBar className="admin-tenants-filters">
+            <SearchInput
+              className="admin-tenants-search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher par nom ou sous-domaine..."
+            />
+            <div className="filter-group admin-tenants-filter-group">
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <option value="all">Statut: Tous</option>
                 <option value="active">Actif</option>
@@ -853,9 +1076,9 @@ export default function AdminTenantsPage({ token }) {
                 ))}
               </select>
             </div>
-          </div>
+          </FilterBar>
 
-          <section className={`admin-tenants-grid ${viewMode === 'list' ? 'list' : ''}`}>
+          <CardGrid className="admin-tenants-grid" list={viewMode === 'list'} size="lg">
             {filteredTenants.map((tenant) => {
               const current = subStatus[tenant.id]
               const status = statusFor(tenant)
@@ -930,14 +1153,15 @@ export default function AdminTenantsPage({ token }) {
             })}
 
             {tenants.length === 0 ? (
-              <div className="admin-tenants-empty">Aucun tenant</div>
+              <EmptyState className="admin-tenants-empty">Aucun tenant</EmptyState>
             ) : null}
             {tenants.length > 0 && filteredTenants.length === 0 ? (
-              <div className="admin-tenants-empty">Aucun tenant pour cette recherche.</div>
+              <EmptyState className="admin-tenants-empty">Aucun tenant pour cette recherche.</EmptyState>
             ) : null}
-          </section>
+          </CardGrid>
         </>
       )}
-    </div>
+    </StandardPage>
   )
 }
+

@@ -1,69 +1,7 @@
-.stores-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px;
-}
-
-.stores-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-}
-
-.stores-hero h2 {
-  margin: 0 0 6px;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.stores-hero p {
-  margin: 0;
-  color: var(--ink-500);
-}
-
-.stores-hero-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: center;
-}
-
-.stores-hero-badge {
-  font-size: 11px;
-  letter-spacing: 0.8px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--warm-soft);
-  color: #9a3412;
-  font-weight: 600;
-}
-
 .stores-hero-actions {
   display: inline-flex;
   gap: 10px;
   align-items: center;
-}
-
-.stores-view-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid var(--border-200);
-  background: #ffffff;
-  color: var(--ink-500);
-  font-size: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.stores-view-button.active {
-  background: var(--accent-500);
-  color: #ffffff;
-  border-color: transparent;
 }
 
 .stores-add-button {
@@ -164,12 +102,6 @@
 .stores-cards.list .store-card-actions {
   margin-top: 0;
   justify-content: flex-end;
-}
-
-@media (max-width: 700px) {
-  .stores-view-button {
-    display: none;
-  }
 }
 
 .stores-loading {

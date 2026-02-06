@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
-import TextInput from '../../components/ui/TextInput'
-import Button from '../../components/ui/Button'
+﻿import { useEffect, useState } from 'react'
+import Button from '../../components/atoms/Button'
+import TextInput from '../../components/atoms/TextInput'
+import StandardPage from '../../templates/StandardPage'
 import './PlatformConfigPage.css'
 
 export default function PlatformConfigPage({ token }) {
@@ -53,7 +54,7 @@ export default function PlatformConfigPage({ token }) {
         }),
       })
       if (!res.ok) throw new Error('Sauvegarde impossible')
-      setSuccess('Configuration mise à jour')
+      setSuccess('Configuration mise Ã  jour')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -62,16 +63,14 @@ export default function PlatformConfigPage({ token }) {
   }
 
   return (
-    <div className="platform-config-page">
-      <header className="billing-hero">
-        <div className="billing-hero-title">
-          <h2>Billing config</h2>
-          <span className="billing-hero-badge">BILLING</span>
-        </div>
-        <p>Commission, solde initial, seuil d’alerte et devise par défaut.</p>
-      </header>
+    <StandardPage
+      className="platform-config-page"
+      title="Billing config"
+      badge="BILLING"
+      subtitle="Commission, solde initial, seuil d'alerte et devise par defaut."
+    >
 
-      {loading ? <div className="billing-status">Chargement…</div> : null}
+      {loading ? <div className="billing-status">Chargementâ€¦</div> : null}
       {error ? <div className="billing-error">{error}</div> : null}
       {success ? <div className="billing-success">{success}</div> : null}
 
@@ -99,6 +98,7 @@ export default function PlatformConfigPage({ token }) {
           </div>
         ))}
       </div>
-    </div>
+    </StandardPage>
   )
 }
+

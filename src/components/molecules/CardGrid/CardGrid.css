@@ -1,0 +1,21 @@
+.card-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width, 240px), 1fr));
+}
+
+.card-grid.size-sm {
+  --card-min-width: 200px;
+}
+
+.card-grid.size-md {
+  --card-min-width: 240px;
+}
+
+.card-grid.size-lg {
+  --card-min-width: 280px;
+}
+
+.card-grid.list {
+  grid-template-columns: 1fr;
+}

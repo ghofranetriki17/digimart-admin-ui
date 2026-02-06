@@ -37,7 +37,6 @@ function App() {
   const [tenantId, setTenantId] = useState(null)
   const [tenantSectorId, setTenantSectorId] = useState(null)
   const [sectorLabel, setSectorLabel] = useState('')
-  const [userId, setUserId] = useState(null)
   const [tenantPage, setTenantPage] = useState('dashboard')
   const [adminPage, setAdminPage] = useState('dashboard')
   const [planName, setPlanName] = useState('')
@@ -58,7 +57,6 @@ function App() {
       setTenantId(saved.tenantId || null)
       setTenantSectorId(saved.tenantSectorId || null)
       setSectorLabel(saved.sectorLabel || '')
-      setUserId(saved.userId || null)
     } catch {
       localStorage.removeItem(STORAGE_KEY)
     }
@@ -170,7 +168,6 @@ function App() {
     setTenantId(null)
     setTenantSectorId(null)
     setSectorLabel('')
-    setUserId(null)
     localStorage.removeItem(STORAGE_KEY)
   }
 
@@ -232,7 +229,6 @@ function App() {
       setTenantId(nextTenantId)
       setTenantSectorId(nextTenantSectorId)
       setSectorLabel(nextSectorLabel)
-      setUserId(nextUserId)
       saveSession({
         token: nextToken,
         roles: nextRoles,
@@ -394,7 +390,6 @@ function App() {
       setTenantId(nextTenantId)
       setTenantSectorId(nextTenantSectorId)
       setSectorLabel(nextSectorLabel)
-      setUserId(nextUserId)
       saveSession({
         token: nextToken,
         roles: nextRoles,

@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from 'react'
+import { DIGIMART_GPT_URL } from '../../../config/links'
 import './Sidebar.css'
 
 export default function Sidebar({ open, onClose, onLogout, onSelect, activeKey }) {
@@ -16,6 +17,7 @@ export default function Sidebar({ open, onClose, onLogout, onSelect, activeKey }
     }
     const next = sectionByKey[activeKey]
     if (!next) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpenSection((prev) => (prev === next ? prev : next))
   }, [activeKey])
 
@@ -117,6 +119,31 @@ export default function Sidebar({ open, onClose, onLogout, onSelect, activeKey }
           <button
             type="button"
             className="sidebar-section-title toggle"
+            onClick={() => toggleSection('support')}
+          >
+            Support &amp; IA
+            <span className={`sidebar-chevron ${openSection === 'support' ? 'open' : ''}`}>
+              v
+            </span>
+          </button>
+          {openSection === 'support' ? (
+            <div className="sidebar-sublist">
+              <a
+                className="sidebar-link"
+                href={DIGIMART_GPT_URL}
+                target="_blank"
+                rel="noreferrer"
+              >
+                DigiMartGPT
+              </a>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="sidebar-section">
+          <button
+            type="button"
+            className="sidebar-section-title toggle"
             onClick={() => toggleSection('billing')}
           >
             Billing
@@ -160,3 +187,4 @@ export default function Sidebar({ open, onClose, onLogout, onSelect, activeKey }
     </aside>
   )
 }
+

@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
-import Button from '../../components/ui/Button'
-import ConfirmDialog from '../../components/ui/ConfirmDialog'
-import Modal from '../../components/ui/Modal'
-import TextInput from '../../components/ui/TextInput'
-import StoreCard from '../../components/stores/StoreCard'
+﻿import { useEffect, useMemo, useState } from 'react'
+import Button from '../../components/atoms/Button'
+import EmptyState from '../../components/atoms/EmptyState'
+import ConfirmDialog from '../../components/atoms/ConfirmDialog'
+import Modal from '../../components/atoms/Modal'
+import SearchInput from '../../components/atoms/SearchInput'
+import TextInput from '../../components/atoms/TextInput'
+import CardGrid from '../../components/molecules/CardGrid'
+import FilterBar from '../../components/molecules/FilterBar'
+import SectionHeader from '../../components/molecules/SectionHeader'
+import ViewToggle from '../../components/molecules/ViewToggle'
+import StoreCard from '../../components/molecules/StoreCard'
+import StandardPage from '../../templates/StandardPage'
 import { FaList, FaThLarge } from 'react-icons/fa'
 import './StoresPage.css'
 
@@ -72,7 +79,7 @@ export default function StoresPage({ token, tenantId }) {
 
   useEffect(() => {
     loadStores()
-  }, [resolvedTenantId, token])
+  }, [resolvedTenantId, token]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 700px)')
@@ -157,8 +164,6 @@ export default function StoresPage({ token, tenantId }) {
       if (!res.ok) {
         throw new Error(await parseError(res))
       }
-      const saved = await res.json()
-
       await loadStores()
       resetForm()
     } catch (err) {
@@ -248,48 +253,36 @@ export default function StoresPage({ token, tenantId }) {
   })
 
   return (
-    <div className="stores-page">
-      <header className="stores-header">
-        <div className="stores-hero">
-          <div className="stores-hero-title">
-            <h2>Magasins & Points de Vente</h2>
-            <span className="stores-hero-badge">MULTI-STORE</span>
-          </div>
-          <p>Gerez vos points de vente physiques, entrepots et boutiques.</p>
-        </div>
+    <StandardPage
+      className="stores-page"
+      title="Magasins & Points de Vente"
+      badge="MULTI-STORE"
+      subtitle="Gerez vos points de vente physiques, entrepots et boutiques."
+      actions={(
         <div className="stores-hero-actions">
-          <button
-            type="button"
-            className={`stores-view-button ${viewMode === 'grid' ? 'active' : ''}`}
-            aria-label="Grid view"
-            onClick={() => setViewMode('grid')}
-          >
-            <FaThLarge />
-          </button>
-          <button
-            type="button"
-            className={`stores-view-button ${viewMode === 'list' ? 'active' : ''}`}
-            aria-label="List view"
-            onClick={() => setViewMode('list')}
-          >
-            <FaList />
-          </button>
+          <ViewToggle
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: 'grid', label: 'Grid view', icon: <FaThLarge />, ariaLabel: 'Grid view' },
+              { value: 'list', label: 'List view', icon: <FaList />, ariaLabel: 'List view' },
+            ]}
+          />
           <Button type="button" className="stores-add-button" onClick={() => setModalOpen(true)}>
             Ajouter un magasin
           </Button>
         </div>
-      </header>
+      )}
+    >
 
-      <div className="stores-filters">
-        <div className="stores-search">
-          <input
-            type="search"
-            placeholder="Rechercher par nom, ville, code..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="stores-filter-group">
+      <FilterBar className="stores-filters">
+        <SearchInput
+          className="stores-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher par nom, ville, code..."
+        />
+        <div className="filter-group stores-filter-group">
           <select
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
@@ -310,7 +303,7 @@ export default function StoresPage({ token, tenantId }) {
             <option value="inactive">Inactif</option>
           </select>
         </div>
-      </div>
+      </FilterBar>
 
       <Modal
         open={modalOpen}
@@ -407,11 +400,8 @@ export default function StoresPage({ token, tenantId }) {
       />
 
       <section className="stores-list">
-        <div className="stores-list-header">
-          <h3>Liste des magasins</h3>
-          {listLoading ? <span className="stores-loading">Loading...</span> : null}
-        </div>
-        <div className={`stores-cards ${viewMode === 'list' ? 'list' : ''}`}>
+        <SectionHeader title="Liste des magasins" loading={listLoading} />
+        <CardGrid className="stores-cards" list={viewMode === 'list'} size="lg">
           {filteredStores.map((store) => (
             <StoreCard
               key={store.id}
@@ -421,8 +411,14 @@ export default function StoresPage({ token, tenantId }) {
               onToggleActive={handleToggleActive}
             />
           ))}
-        </div>
+          {filteredStores.length === 0 ? (
+            <EmptyState className="stores-empty">Aucun magasin trouve.</EmptyState>
+          ) : null}
+        </CardGrid>
       </section>
-    </div>
+    </StandardPage>
   )
 }
+
+
+

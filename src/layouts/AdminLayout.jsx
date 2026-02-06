@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import Navbar from '../components/layout/Navbar'
-import Sidebar from '../components/layout/Sidebar'
+﻿import { useState } from 'react'
+import Navbar from '../components/organisms/Navbar'
+import Sidebar from '../components/organisms/Sidebar'
 import './AdminLayout.css'
 
 export default function AdminLayout({
@@ -36,3 +36,4 @@ export default function AdminLayout({
     </div>
   )
 }
+

@@ -1,7 +1,15 @@
 ﻿import { useEffect, useState } from 'react'
 import { FaCrown, FaList, FaThLarge } from 'react-icons/fa'
-import TextInput from '../../components/ui/TextInput'
-import Button from '../../components/ui/Button'
+import Button from '../../components/atoms/Button'
+import SearchInput from '../../components/atoms/SearchInput'
+import EmptyState from '../../components/atoms/EmptyState'
+import TextInput from '../../components/atoms/TextInput'
+import CardGrid from '../../components/molecules/CardGrid'
+import FilterBar from '../../components/molecules/FilterBar'
+import SectionHeader from '../../components/molecules/SectionHeader'
+import StatsGrid from '../../components/molecules/StatsGrid'
+import ViewToggle from '../../components/molecules/ViewToggle'
+import StandardPage from '../../templates/StandardPage'
 import './PlansPage.css'
 
 const emptyForm = {
@@ -160,79 +168,62 @@ export default function PlansPage({ token }) {
   const activePlans = plans.filter((plan) => plan.active).length
 
   return (
-    <div className="plans-page">
-      <header className="plans-header">
-        <div className="plans-hero">
-          <div className="plans-hero-title">
-            <h2>Plans &amp; fonctionnalites</h2>
-            <span className="plans-hero-badge">BILLING</span>
-          </div>
-          <p>Gerez les plans d'abonnement et les features premium.</p>
-        </div>
+    <StandardPage
+      className="plans-page"
+      title="Plans & fonctionnalites"
+      badge="BILLING"
+      subtitle="Gerez les plans d'abonnement et les features premium."
+      actions={(
         <div className="plans-hero-actions">
-          <div className="plans-view-toggle">
-            <button
-              type="button"
-              className={`plans-view-button ${viewMode === 'grid' ? 'active' : ''}`}
-              aria-label="Grid view"
-              onClick={() => setViewMode('grid')}
-            >
-              <FaThLarge />
-            </button>
-            <button
-              type="button"
-              className={`plans-view-button ${viewMode === 'list' ? 'active' : ''}`}
-              aria-label="List view"
-              onClick={() => setViewMode('list')}
-            >
-              <FaList />
-            </button>
-          </div>
+          <ViewToggle
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: 'grid', label: 'Grid view', icon: <FaThLarge />, ariaLabel: 'Grid view' },
+              { value: 'list', label: 'List view', icon: <FaList />, ariaLabel: 'List view' },
+            ]}
+          />
           <Button type="button" className="plans-add-button" onClick={openCreate}>
             Ajouter un plan
           </Button>
         </div>
-      </header>
+      )}
+    >
 
-      <div className="plans-stats">
-        <div className="plans-stat-card">
-          <div className="plans-stat-label">Total</div>
-          <div className="plans-stat-value">{totalPlans}</div>
-        </div>
-        <div className="plans-stat-card">
-          <div className="plans-stat-label">Actifs</div>
-          <div className="plans-stat-value">{activePlans}</div>
-        </div>
-      </div>
+      <StatsGrid
+        items={[
+          { key: 'total', label: 'Total', value: totalPlans },
+          { key: 'active', label: 'Actifs', value: activePlans },
+        ]}
+        className="plans-stats"
+        cardClassName="plans-stat-card"
+        labelClassName="plans-stat-label"
+        valueClassName="plans-stat-value"
+      />
 
-      <div className="plans-filters">
-        <div className="plans-search">
-          <input
-            type="search"
-            placeholder="Rechercher un plan..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="plans-filter-group">
+      <FilterBar className="plans-filters">
+        <SearchInput
+          className="plans-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher un plan..."
+        />
+        <div className="filter-group plans-filter-group">
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="all">Statut</option>
             <option value="active">Actif</option>
             <option value="inactive">Inactif</option>
           </select>
         </div>
-      </div>
+      </FilterBar>
 
       {error ? <div className="plans-error">{error}</div> : null}
 
       <section className="plans-list">
-        <div className="plans-list-header">
-          <h3>Liste des plans</h3>
-          {loading ? <span className="plans-loading">Loading...</span> : null}
-        </div>
-        <div className={`plans-cards ${viewMode === 'list' ? 'list' : ''}`}>
+        <SectionHeader title="Liste des plans" loading={loading} />
+        <CardGrid className="plans-cards" list={viewMode === 'list'} size="lg">
           {filteredPlans.length === 0 ? (
-            <div className="plans-empty">Aucun plan trouve.</div>
+            <EmptyState>Aucun plan trouve.</EmptyState>
           ) : (
             filteredPlans.map((plan) => (
               <article key={plan.id} className="plan-card">
@@ -270,7 +261,7 @@ export default function PlansPage({ token }) {
               </article>
             ))
           )}
-        </div>
+        </CardGrid>
       </section>
 
       {modalOpen ? (
@@ -354,6 +345,7 @@ export default function PlansPage({ token }) {
           </div>
         </div>
       ) : null}
-    </div>
+    </StandardPage>
   )
 }
+

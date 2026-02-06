@@ -1,15 +1,12 @@
-import { useEffect, useState } from 'react'
-import Button from '../../components/ui/Button'
+﻿import { useEffect, useState } from 'react'
+import StandardPage from '../../templates/StandardPage'
 import './SubscriptionPage.css'
 
 export default function SubscriptionPage({ token, tenantId }) {
   const [current, setCurrent] = useState(null)
   const [history, setHistory] = useState([])
-  const [plans, setPlans] = useState([])
-  const [selectedPlan, setSelectedPlan] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [processing, setProcessing] = useState(false)
 
   const auth = { Authorization: `Bearer ${token}` }
 
@@ -17,18 +14,15 @@ export default function SubscriptionPage({ token, tenantId }) {
     setLoading(true)
     setError('')
     try {
-      const [curRes, histRes, plansRes] = await Promise.all([
+      const [curRes, histRes] = await Promise.all([
         fetch(`/api/tenants/${tenantId}/subscriptions/current`, { headers: auth }),
         fetch(`/api/tenants/${tenantId}/subscriptions/history`, { headers: auth }),
-        fetch('/api/plans', { headers: auth }),
       ])
-      if (!curRes.ok) throw new Error('Aucun abonnement trouvé')
+      if (!curRes.ok) throw new Error('Aucun abonnement trouvÃ©')
       const curData = await curRes.json()
       setCurrent(curData)
       const histData = histRes.ok ? await histRes.json() : []
       setHistory(Array.isArray(histData) ? histData : [])
-      const planData = plansRes.ok ? await plansRes.json() : []
-      setPlans(Array.isArray(planData) ? planData : [])
     } catch (err) {
       setError(err.message)
     } finally {
@@ -38,38 +32,17 @@ export default function SubscriptionPage({ token, tenantId }) {
 
   useEffect(() => {
     if (tenantId) load()
-  }, [tenantId])
-
-  const activate = async () => {
-    if (!selectedPlan) return
-    setProcessing(true)
-    setError('')
-    try {
-      const res = await fetch(`/api/tenants/${tenantId}/subscriptions/activate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify({ planId: Number(selectedPlan) }),
-      })
-      if (!res.ok) throw new Error('Activation impossible')
-      setSelectedPlan('')
-      await load()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setProcessing(false)
-    }
-  }
+  }, [tenantId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="subscription-page">
-      <div className="subscription-header">
-        <div>
-          <h2>Abonnement du tenant</h2>
-          <p>Plan actif, changement de plan et historique.</p>
-        </div>
-      </div>
+    <StandardPage
+      className="subscription-page"
+      title="Abonnement du tenant"
+      subtitle="Plan actif et historique."
+      align="left"
+    >
 
-      {loading ? <div className="subscription-status">Chargement…</div> : null}
+      {loading ? <div className="subscription-status">Chargementâ€¦</div> : null}
       {error ? <div className="subscription-error">{error}</div> : null}
 
       {current ? (
@@ -86,56 +59,57 @@ export default function SubscriptionPage({ token, tenantId }) {
           </div>
           <div>
             <div className="subscription-label">Depuis</div>
-            <div>{current.startDate || '—'}</div>
+            <div>{current.startDate || 'â€”'}</div>
           </div>
           <div>
-            <div className="subscription-label">Prochaine échéance</div>
-            <div>{current.nextBillingDate || '—'}</div>
+            <div className="subscription-label">Prochaine Ã©chÃ©ance</div>
+            <div>{current.nextBillingDate || 'â€”'}</div>
           </div>
         </div>
       ) : null}
 
-      <div className="subscription-change">
-        <label className="subscription-field">
-          <span className="subscription-label">Changer de plan</span>
-          <select
-            value={selectedPlan}
-            onChange={(e) => setSelectedPlan(e.target.value)}
-          >
-            <option value="">Sélectionner un plan</option>
-            {plans.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.price} {p.currency} / {p.billingCycle?.toLowerCase()})
-              </option>
-            ))}
-          </select>
-        </label>
-        <Button variant="primary" disabled={!selectedPlan || processing} onClick={activate}>
-          {processing ? 'Activation…' : 'Activer'}
-        </Button>
-      </div>
-
       <div className="subscription-history">
-        <div className="subscription-history-head">
-          <div>Date</div>
-          <div>Action</div>
-          <div>Ancien plan</div>
-          <div>Nouveau plan</div>
-          <div>Par</div>
-        </div>
-        {history.map((h) => (
-          <div key={h.id} className="subscription-history-row">
-            <div>{h.performedAt}</div>
-            <div>{h.action}</div>
-            <div>{h.oldPlanId || '—'}</div>
-            <div>{h.newPlanId}</div>
-            <div>{h.performedBy || '—'}</div>
+        <div className="subscription-history-header">
+          <div>
+            <div className="subscription-section-title">Historique</div>
+            <div className="subscription-section-subtitle">Derniers changements de plan.</div>
           </div>
-        ))}
-        {history.length === 0 ? (
-          <div className="subscription-empty">Pas d’historique</div>
-        ) : null}
+          <div className="subscription-count">{history.length} entrees</div>
+        </div>
+        <div className="subscription-history-list">
+          {history.map((h) => {
+            const actionKey = String(h.action || '').toLowerCase().replace(/\s+/g, '-')
+            return (
+              <div key={h.id} className="subscription-history-item">
+                <div className="subscription-history-main">
+                  <div className="subscription-history-date">{h.performedAt}</div>
+                  <div className={`subscription-history-action action-${actionKey}`}>
+                    {h.action || 'â€”'}
+                  </div>
+                </div>
+                <div className="subscription-history-meta">
+                  <div className="subscription-meta-group">
+                    <span className="subscription-meta-label">Ancien plan</span>
+                    <span className="subscription-meta-value">{h.oldPlanId || 'â€”'}</span>
+                  </div>
+                  <div className="subscription-meta-group">
+                    <span className="subscription-meta-label">Nouveau plan</span>
+                    <span className="subscription-meta-value">{h.newPlanId || 'â€”'}</span>
+                  </div>
+                  <div className="subscription-meta-group">
+                    <span className="subscription-meta-label">Par</span>
+                    <span className="subscription-meta-value">{h.performedBy || 'â€”'}</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+          {history.length === 0 ? (
+            <div className="subscription-empty">Pas dâ€™historique</div>
+          ) : null}
+        </div>
       </div>
-    </div>
+    </StandardPage>
   )
 }
+

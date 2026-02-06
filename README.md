@@ -109,3 +109,18 @@ style Product fill:#4CAF50,stroke:#1B5E20,color:#fff
 style ProductVariant fill:#4CAF50,stroke:#1B5E20,color:#fff
 
 ``````
+### Atomic Design Style Guide
+See `docs/ATOMIC_STYLE_GUIDE.md` for structure, naming, and CSS conventions.
+
+## Applying the Style Guide
+- Use the correct layer for each component (`atoms`, `molecules`, `organisms`, `templates`).
+- Create a folder per component and keep `Component.jsx`, `Component.css`, and `index.js` together.
+- Pages should compose templates and avoid layout styles in page CSS.
+- Run the audit script to validate placement: `npm run audit:atomic`.
+
+## New Component Checklist
+1. Choose the correct layer.
+2. Create `PascalCase` folder name.
+3. Add `Component.jsx`, `Component.css`, `index.js`.
+4. Use `kebab-case` class names scoped to the component.
+5. Run `npm run audit:atomic` and `npm test -- --run`.

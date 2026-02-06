@@ -1,0 +1,6 @@
+.standard-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--page-gap, 24px);
+  width: 100%;
+}

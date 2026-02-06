@@ -1,87 +1,9 @@
-﻿.sectors-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.sectors-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-}
-
-.sectors-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.sectors-hero-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.sectors-hero-title h2 {
-  margin: 0 0 6px;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.sectors-hero-badge {
-  font-size: 11px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  background: var(--warm-soft);
-  color: #9a3412;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-.sectors-hero p {
-  margin: 0;
-  color: var(--ink-500);
-}
-
-.sectors-hero-actions {
+﻿.sectors-hero-actions {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
-}
-
-.sectors-view-toggle {
-  display: inline-flex;
-  gap: 10px;
-}
-
-.sectors-view-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid var(--border-200);
-  background: #ffffff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-500);
-  transition: all 0.2s ease;
-}
-
-.sectors-view-button.active {
-  background: var(--accent-500);
-  color: #ffffff;
-  border-color: transparent;
 }
 
 .sectors-add-button {
@@ -465,11 +387,8 @@
 }
 
 @media (max-width: 700px) {
-  .sectors-view-toggle {
-    display: none;
-  }
-
   .sectors-stats {
     grid-template-columns: 1fr;
   }
 }
+

@@ -1,5 +1,6 @@
-import Button from '../../components/ui/Button'
-import TextInput from '../../components/ui/TextInput'
+﻿import Button from '../../components/atoms/Button'
+import AuthPage from '../../templates/AuthPage'
+import TextInput from '../../components/atoms/TextInput'
 import './LoginPage.css'
 
 export default function LoginPage({
@@ -23,7 +24,8 @@ export default function LoginPage({
   onBackToLogin,
 }) {
   return (
-    <div className="app">
+    <AuthPage>
+      <div className="app">
       <h1>{mode === 'register' ? 'Create Your Store' : 'Digimart Login'}</h1>
       <p>
         {mode === 'register'
@@ -184,6 +186,9 @@ export default function LoginPage({
           )}
         </div>
       </form>
-    </div>
+      </div>
+    </AuthPage>
   )
 }
+
+

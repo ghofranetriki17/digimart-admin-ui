@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import TenantNavbar from '../components/layout/TenantNavbar'
-import TenantSidebar from '../components/layout/TenantSidebar'
+﻿import { useState } from 'react'
+import TenantNavbar from '../components/organisms/TenantNavbar'
+import TenantSidebar from '../components/organisms/TenantSidebar'
 import './TenantLayout.css'
 
 export default function TenantLayout({
@@ -51,3 +51,4 @@ export default function TenantLayout({
     </div>
   )
 }
+

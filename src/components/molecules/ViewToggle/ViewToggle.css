@@ -1,0 +1,29 @@
+.view-toggle {
+  display: inline-flex;
+  gap: 10px;
+}
+
+.view-toggle-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border-200);
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-500);
+  transition: all 0.2s ease;
+}
+
+.view-toggle-button.active {
+  background: var(--accent-500);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+@media (max-width: 700px) {
+  .view-toggle {
+    display: none;
+  }
+}

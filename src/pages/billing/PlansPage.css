@@ -1,87 +1,9 @@
-﻿.plans-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.plans-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-}
-
-.plans-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.plans-hero-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.plans-hero-title h2 {
-  margin: 0 0 6px;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.plans-hero-badge {
-  font-size: 11px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  background: var(--warm-soft);
-  color: #9a3412;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-.plans-hero p {
-  margin: 0;
-  color: var(--ink-500);
-}
-
-.plans-hero-actions {
+﻿.plans-hero-actions {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
-}
-
-.plans-view-toggle {
-  display: inline-flex;
-  gap: 10px;
-}
-
-.plans-view-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid var(--border-200);
-  background: #ffffff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-500);
-  transition: all 0.2s ease;
-}
-
-.plans-view-button.active {
-  background: var(--accent-500);
-  color: #ffffff;
-  border-color: transparent;
 }
 
 .plans-add-button {
@@ -408,19 +330,12 @@
 }
 
 @media (max-width: 700px) {
-  .plans-page {
-    padding: 16px;
-  }
-
   .plans-row {
     grid-template-columns: 1fr;
-  }
-
-  .plans-view-toggle {
-    display: none;
   }
 
   .plans-stats {
     grid-template-columns: 1fr;
   }
 }
+

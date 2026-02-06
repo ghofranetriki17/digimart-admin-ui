@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { FaList, FaThLarge, FaUserPlus } from 'react-icons/fa'
-import Button from '../../components/ui/Button'
-import Modal from '../../components/ui/Modal'
-import TextInput from '../../components/ui/TextInput'
-import UserCard from '../../components/users/UserCard'
+import Button from '../../components/atoms/Button'
+import EmptyState from '../../components/atoms/EmptyState'
+import Modal from '../../components/atoms/Modal'
+import SearchInput from '../../components/atoms/SearchInput'
+import TextInput from '../../components/atoms/TextInput'
+import CardGrid from '../../components/molecules/CardGrid'
+import FilterBar from '../../components/molecules/FilterBar'
+import StatsGrid from '../../components/molecules/StatsGrid'
+import ViewToggle from '../../components/molecules/ViewToggle'
+import UserCard from '../../components/molecules/UserCard'
+import StandardPage from '../../templates/StandardPage'
 import './UsersPage.css'
 
 const emptyForm = {
@@ -106,7 +113,7 @@ export default function UsersPage({ token, tenantId }) {
       setRoles(list)
       setAvailableRoles(list.filter((role) => role.tenantId === tenantId))
       
-      // ✅ Mettre à jour les permissions du rôle sélectionné après le rechargement
+      // Mettre a jour les permissions du role selectionne apres le rechargement
       if (selectedRoleId) {
         const updatedRole = list.find(r => r.id === selectedRoleId)
         if (updatedRole) {
@@ -138,7 +145,7 @@ export default function UsersPage({ token, tenantId }) {
     loadUsers()
     loadRoles()
     loadPermissions()
-  }, [token, tenantId])
+  }, [token, tenantId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 700px)')
@@ -461,40 +468,10 @@ export default function UsersPage({ token, tenantId }) {
   const templateRoles = roles.filter((role) => role.tenantId === 0)
   const tenantRoles = roles.filter((role) => role.tenantId === tenantId)
 
-  const permissionByCode = useMemo(() => {
-    const map = new Map()
-    permissions.forEach((permission) => {
-      map.set(permission.code, permission)
-    })
-    return map
-  }, [permissions])
-
-  const availablePermissions = useMemo(() => {
-    const term = permSearch.trim().toLowerCase()
-    return permissions
-      .filter((permission) => {
-        if (rolePermSelection.includes(permission.code)) return false
-        if (!term) return true
-        const label = permission.label || ''
-        return (
-          String(permission.code).toLowerCase().includes(term)
-          || String(label).toLowerCase().includes(term)
-        )
-      })
-      .sort((a, b) => String(a.code).localeCompare(String(b.code)))
-  }, [permissions, permSearch, rolePermSelection])
-
-  const selectedPermissions = useMemo(
-    () => rolePermSelection
-      .map((code) => permissionByCode.get(code) || { code, label: code })
-      .sort((a, b) => String(a.code).localeCompare(String(b.code))),
-    [permissionByCode, rolePermSelection],
-  )
-
   const addPermission = async (code) => {
     if (!canEditSelected || isUpdating) return
     
-    // ✅ Construire la nouvelle liste de permissions
+    // Construire la nouvelle liste de permissions
     const next = rolePermSelection.includes(code) 
       ? rolePermSelection 
       : [...rolePermSelection, code]
@@ -503,10 +480,10 @@ export default function UsersPage({ token, tenantId }) {
     const ok = await applyRolePermissions(next)
     
     if (ok) {
-      // ✅ Si succès, recharger pour synchroniser
+      // Si succes, recharger pour synchroniser
       await loadRoles()
     } else {
-      // ❌ Si échec, restaurer l'état précédent
+      // Si echec, restaurer l'etat precedent
       setRolePermSelection(rolePermSelection)
     }
     
@@ -516,17 +493,17 @@ export default function UsersPage({ token, tenantId }) {
   const removePermission = async (code) => {
     if (!canEditSelected || isUpdating) return
     
-    // ✅ Construire la nouvelle liste de permissions
+    // Construire la nouvelle liste de permissions
     const next = rolePermSelection.filter((item) => item !== code)
     
     setIsUpdating(true)
     const ok = await applyRolePermissions(next)
     
     if (ok) {
-      // ✅ Si succès, recharger pour synchroniser
+      // Si succes, recharger pour synchroniser
       await loadRoles()
     } else {
-      // ❌ Si échec, restaurer l'état précédent
+      // Si echec, restaurer l'etat precedent
       setRolePermSelection(rolePermSelection)
     }
     
@@ -534,34 +511,21 @@ export default function UsersPage({ token, tenantId }) {
   }
 
   return (
-    <div className="users-page">
-      <header className="users-header">
-        <div className="users-hero">
-          <div className="users-hero-title">
-            <h2>Gestion des Utilisateurs</h2>
-            <span className="users-hero-badge">TEAM ACCESS</span>
-          </div>
-          <p>Gerez les acces de votre equipe, roles et permissions, sans complexite.</p>
-        </div>
+    <StandardPage
+      className="users-page"
+      title="Gestion des Utilisateurs"
+      badge="TEAM ACCESS"
+      subtitle="Gerez les acces de votre equipe, roles et permissions, sans complexite."
+      actions={(
         <div className="users-hero-actions">
-          <div className="users-view-toggle">
-            <button
-              type="button"
-              className={`users-view-button ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-              aria-label="Vue grille"
-            >
-              <FaThLarge />
-            </button>
-            <button
-              type="button"
-              className={`users-view-button ${viewMode === 'list' ? 'active' : ''}`}
-              onClick={() => setViewMode('list')}
-              aria-label="Vue liste"
-            >
-              <FaList />
-            </button>
-          </div>
+          <ViewToggle
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: 'grid', label: 'Vue grille', icon: <FaThLarge />, ariaLabel: 'Vue grille' },
+              { value: 'list', label: 'Vue liste', icon: <FaList />, ariaLabel: 'Vue liste' },
+            ]}
+          />
           <Button
             type="button"
             variant="secondary"
@@ -574,33 +538,29 @@ export default function UsersPage({ token, tenantId }) {
             <FaUserPlus /> Ajouter un membre
           </Button>
         </div>
-      </header>
+      )}
+    >
 
-      <div className="users-stats">
-        <div className="users-stat-card">
-          <div className="users-stat-label">Total</div>
-          <div className="users-stat-value">{totalCount}</div>
-        </div>
-        <div className="users-stat-card">
-          <div className="users-stat-label">Actifs</div>
-          <div className="users-stat-value">{activeCount}</div>
-        </div>
-        <div className="users-stat-card">
-          <div className="users-stat-label">Admins</div>
-          <div className="users-stat-value">{adminCount}</div>
-        </div>
-      </div>
+      <StatsGrid
+        items={[
+          { key: 'total', label: 'Total', value: totalCount },
+          { key: 'active', label: 'Actifs', value: activeCount },
+          { key: 'admins', label: 'Admins', value: adminCount },
+        ]}
+        className="users-stats"
+        cardClassName="users-stat-card"
+        labelClassName="users-stat-label"
+        valueClassName="users-stat-value"
+      />
 
-      <div className="users-filters">
-        <div className="users-search">
-          <input
-            type="search"
-            placeholder="Rechercher par nom ou email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="users-filter-group">
+      <FilterBar className="users-filters">
+        <SearchInput
+          className="users-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher par nom ou email..."
+        />
+        <div className="filter-group users-filter-group">
           <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
             <option value="all">Role: Tous</option>
             <option value="owner">Owner</option>
@@ -613,11 +573,11 @@ export default function UsersPage({ token, tenantId }) {
             <option value="inactive">Inactif</option>
           </select>
         </div>
-      </div>
+      </FilterBar>
 
       {error ? <p className="users-error">{error}</p> : null}
 
-      <div className={`users-cards ${viewMode === 'list' ? 'list' : ''}`}>
+      <CardGrid className="users-cards" list={viewMode === 'list'} size="md">
         {filteredUsers.map((user) => (
           <UserCard
             key={user.id}
@@ -626,7 +586,10 @@ export default function UsersPage({ token, tenantId }) {
             onManageRoles={openRoleGrid}
           />
         ))}
-      </div>
+        {filteredUsers.length === 0 ? (
+          <EmptyState className="users-empty">Aucun utilisateur trouve.</EmptyState>
+        ) : null}
+      </CardGrid>
 
       <Modal
         open={modalOpen}
@@ -1148,6 +1111,7 @@ export default function UsersPage({ token, tenantId }) {
           </div>
         </div>
       </Modal>
-    </div>
+    </StandardPage>
   )
 }
+

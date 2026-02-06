@@ -1,0 +1,65 @@
+.page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.page-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-hero-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.page-hero-title h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.page-hero-badge {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  background: var(--warm-soft);
+  color: #9a3412;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.page-hero p {
+  margin: 0;
+  color: var(--ink-500);
+}
+
+.page-hero-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.page-header.align-left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.page-header.align-left .page-hero,
+.page-header.align-left .page-hero-title,
+.page-header.align-left .page-hero-actions {
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}

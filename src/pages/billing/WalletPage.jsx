@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
-import TextInput from '../../components/ui/TextInput'
-import Button from '../../components/ui/Button'
+﻿import { useEffect, useState } from 'react'
+import StandardPage from '../../templates/StandardPage'
 import './WalletPage.css'
 
 export default function WalletPage({ token, tenantId }) {
@@ -8,11 +7,6 @@ export default function WalletPage({ token, tenantId }) {
   const [txns, setTxns] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [amount, setAmount] = useState('')
-  const [reason, setReason] = useState('')
-  const [reference, setReference] = useState('')
-  const [mode, setMode] = useState('CREDIT')
-  const [processing, setProcessing] = useState(false)
 
   const auth = { Authorization: `Bearer ${token}` }
 
@@ -36,67 +30,17 @@ export default function WalletPage({ token, tenantId }) {
 
   useEffect(() => {
     if (tenantId) load()
-  }, [tenantId])
-
-  const submit = async () => {
-    setProcessing(true)
-    setError('')
-    try {
-      const body = {
-        amount: parseFloat(amount || '0'),
-        reason,
-        reference,
-      }
-      const endpoint = mode === 'DEBIT' ? 'debit' : 'credit'
-      const res = await fetch(`/api/tenants/${tenantId}/wallet/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error('Opération impossible')
-      setAmount('')
-      setReason('')
-      setReference('')
-      await load()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setProcessing(false)
-    }
-  }
+  }, [tenantId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="wallet-page">
-      <div className="wallet-header">
-        <div>
-          <h2>Wallet du tenant</h2>
-          <p>Solde, statut et historique des mouvements.</p>
-        </div>
-        <div className="wallet-actions">
-          <label className="wallet-toggle">
-            <input
-              type="radio"
-              name="mode"
-              value="CREDIT"
-              checked={mode === 'CREDIT'}
-              onChange={() => setMode('CREDIT')}
-            />
-            Créditer
-          </label>
-          <label className="wallet-toggle">
-            <input
-              type="radio"
-              name="mode"
-              value="DEBIT"
-              checked={mode === 'DEBIT'}
-              onChange={() => setMode('DEBIT')}
-            />
-            Débiter
-          </label>
-        </div>
-      </div>
+    <StandardPage
+      className="wallet-page"
+      title="Wallet du tenant"
+      subtitle="Solde, statut et historique des mouvements."
+      align="left"
+    >
 
-      {loading ? <div className="wallet-status">Chargement…</div> : null}
+      {loading ? <div className="wallet-status">Chargementâ€¦</div> : null}
       {error ? <div className="wallet-error">{error}</div> : null}
 
       {wallet ? (
@@ -114,58 +58,54 @@ export default function WalletPage({ token, tenantId }) {
             </div>
           </div>
           <div>
-            <div className="wallet-label">Dernière transaction</div>
-            <div>{wallet.lastTransactionAt || '—'}</div>
+            <div className="wallet-label">DerniÃ¨re transaction</div>
+            <div>{wallet.lastTransactionAt || 'â€”'}</div>
           </div>
         </div>
       ) : null}
 
-      <div className="wallet-form">
-        <TextInput
-          label="Montant"
-          type="number"
-          step="0.01"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <TextInput
-          label="Raison"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
-        <TextInput
-          label="Référence"
-          value={reference}
-          onChange={(e) => setReference(e.target.value)}
-        />
-        <Button variant="primary" disabled={processing} onClick={submit}>
-          {processing ? 'Traitement…' : mode === 'DEBIT' ? 'Débiter' : 'Créditer'}
-        </Button>
-      </div>
-
-      <div className="wallet-table">
-        <div className="wallet-table-head">
-          <div>Date</div>
-          <div>Type</div>
-          <div>Montant</div>
-          <div>Avant</div>
-          <div>Après</div>
-          <div>Raison</div>
-          <div>Réf</div>
-        </div>
-        {txns.map((t) => (
-          <div key={t.id} className="wallet-table-row">
-            <div>{t.transactionDate}</div>
-            <div>{t.type}</div>
-            <div>{t.amount}</div>
-            <div>{t.balanceBefore}</div>
-            <div>{t.balanceAfter}</div>
-            <div>{t.reason}</div>
-            <div>{t.reference || '—'}</div>
+      <div className="wallet-history">
+        <div className="wallet-history-header">
+          <div>
+            <div className="wallet-section-title">Historique des mouvements</div>
+            <div className="wallet-section-subtitle">Dernieres operations du wallet.</div>
           </div>
-        ))}
-        {txns.length === 0 ? <div className="wallet-empty">Aucune transaction</div> : null}
+          <div className="wallet-count">{txns.length} mouvements</div>
+        </div>
+        <div className="wallet-history-list">
+          {txns.map((t) => {
+            const typeKey = String(t.type || '').toLowerCase()
+            const amountClass = typeKey === 'credit' ? 'amount-credit' : typeKey === 'debit' ? 'amount-debit' : ''
+            return (
+              <div key={t.id} className="wallet-history-item">
+                <div className="wallet-history-main">
+                  <div className="wallet-history-date">{t.transactionDate}</div>
+                  <div className={`wallet-history-type type-${typeKey}`}>{t.type || 'â€”'}</div>
+                </div>
+                <div className="wallet-history-amount">
+                  <div className={`wallet-amount-pill ${amountClass}`}>{t.amount}</div>
+                  <div className="wallet-balance">
+                    <span>Avant {t.balanceBefore}</span>
+                    <span>Apres {t.balanceAfter}</span>
+                  </div>
+                </div>
+                <div className="wallet-history-meta">
+                  <div className="wallet-meta-group">
+                    <span className="wallet-meta-label">Raison</span>
+                    <span className="wallet-meta-value">{t.reason || 'â€”'}</span>
+                  </div>
+                  <div className="wallet-meta-group">
+                    <span className="wallet-meta-label">Ref</span>
+                    <span className="wallet-meta-value">{t.reference || 'â€”'}</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+          {txns.length === 0 ? <div className="wallet-empty">Aucune transaction</div> : null}
+        </div>
       </div>
-    </div>
+    </StandardPage>
   )
 }
+

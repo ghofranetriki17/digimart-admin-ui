@@ -1,9 +1,17 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { FaEdit, FaEye, FaLayerGroup, FaList, FaThLarge, FaTrash } from 'react-icons/fa'
-import Button from '../../components/ui/Button'
-import ConfirmDialog from '../../components/ui/ConfirmDialog'
-import Modal from '../../components/ui/Modal'
-import TextInput from '../../components/ui/TextInput'
+import Button from '../../components/atoms/Button'
+import ConfirmDialog from '../../components/atoms/ConfirmDialog'
+import EmptyState from '../../components/atoms/EmptyState'
+import Modal from '../../components/atoms/Modal'
+import SearchInput from '../../components/atoms/SearchInput'
+import TextInput from '../../components/atoms/TextInput'
+import CardGrid from '../../components/molecules/CardGrid'
+import FilterBar from '../../components/molecules/FilterBar'
+import SectionHeader from '../../components/molecules/SectionHeader'
+import StatsGrid from '../../components/molecules/StatsGrid'
+import ViewToggle from '../../components/molecules/ViewToggle'
+import StandardPage from '../../templates/StandardPage'
 import './SectorsPage.css'
 
 const emptyForm = {
@@ -74,7 +82,7 @@ export default function SectorsPage({ token }) {
 
   useEffect(() => {
     loadSectors()
-  }, [token])
+  }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 700px)')
@@ -212,83 +220,63 @@ export default function SectorsPage({ token }) {
   const totalTenants = sectors.reduce((sum, sector) => sum + (sector.tenantCount || 0), 0)
 
   return (
-    <div className="sectors-page">
-      <header className="sectors-header">
-        <div className="sectors-hero">
-          <div className="sectors-hero-title">
-            <h2>Secteurs d'activite</h2>
-            <span className="sectors-hero-badge">CATALOGUE</span>
-          </div>
-          <p>Classez vos tenants par secteur pour mieux piloter les permissions.</p>
-        </div>
+    <StandardPage
+      className="sectors-page"
+      title="Secteurs d'activite"
+      badge="CATALOGUE"
+      subtitle="Classez vos tenants par secteur pour mieux piloter les permissions."
+      actions={(
         <div className="sectors-hero-actions">
-          <div className="sectors-view-toggle">
-            <button
-              type="button"
-              className={`sectors-view-button ${viewMode === 'grid' ? 'active' : ''}`}
-              aria-label="Grid view"
-              onClick={() => setViewMode('grid')}
-            >
-              <FaThLarge />
-            </button>
-            <button
-              type="button"
-              className={`sectors-view-button ${viewMode === 'list' ? 'active' : ''}`}
-              aria-label="List view"
-              onClick={() => setViewMode('list')}
-            >
-              <FaList />
-            </button>
-          </div>
+          <ViewToggle
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: 'grid', label: 'Grid view', icon: <FaThLarge />, ariaLabel: 'Grid view' },
+              { value: 'list', label: 'List view', icon: <FaList />, ariaLabel: 'List view' },
+            ]}
+          />
           <Button type="button" className="sectors-add-button" onClick={openCreate}>
             Ajouter un secteur
           </Button>
         </div>
-      </header>
+      )}
+    >
 
-      <div className="sectors-stats">
-        <div className="sectors-stat-card">
-          <div className="sectors-stat-label">Total</div>
-          <div className="sectors-stat-value">{total}</div>
-        </div>
-        <div className="sectors-stat-card">
-          <div className="sectors-stat-label">Actifs</div>
-          <div className="sectors-stat-value">{activeCount}</div>
-        </div>
-        <div className="sectors-stat-card">
-          <div className="sectors-stat-label">Tenants lies</div>
-          <div className="sectors-stat-value">{totalTenants}</div>
-        </div>
-      </div>
+      <StatsGrid
+        items={[
+          { key: 'total', label: 'Total', value: total },
+          { key: 'active', label: 'Actifs', value: activeCount },
+          { key: 'tenants', label: 'Tenants lies', value: totalTenants },
+        ]}
+        className="sectors-stats"
+        cardClassName="sectors-stat-card"
+        labelClassName="sectors-stat-label"
+        valueClassName="sectors-stat-value"
+      />
 
-      <div className="sectors-filters">
-        <div className="sectors-search">
-          <input
-            type="search"
-            placeholder="Rechercher un secteur..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="sectors-filter-group">
+      <FilterBar className="sectors-filters">
+        <SearchInput
+          className="sectors-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher un secteur..."
+        />
+        <div className="filter-group sectors-filter-group">
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="all">Statut</option>
             <option value="active">Actif</option>
             <option value="inactive">Inactif</option>
           </select>
         </div>
-      </div>
+      </FilterBar>
 
       {error ? <p className="sectors-error">{error}</p> : null}
 
       <section className="sectors-list">
-        <div className="sectors-list-header">
-          <h3>Liste des secteurs</h3>
-          {listLoading ? <span className="sectors-loading">Loading...</span> : null}
-        </div>
-        <div className={`sectors-cards ${viewMode === 'list' ? 'list' : ''}`}>
+        <SectionHeader title="Liste des secteurs" loading={listLoading} />
+        <CardGrid className="sectors-cards" list={viewMode === 'list'} size="lg">
           {filteredSectors.length === 0 ? (
-            <div className="sectors-empty">Aucun secteur trouve.</div>
+            <EmptyState>Aucun secteur trouve.</EmptyState>
           ) : (
             filteredSectors.map((sector) => (
               <article key={sector.id} className="sector-card">
@@ -340,7 +328,7 @@ export default function SectorsPage({ token }) {
               </article>
             ))
           )}
-        </div>
+        </CardGrid>
       </section>
 
       <Modal
@@ -470,6 +458,7 @@ export default function SectorsPage({ token }) {
           setDeleteTarget(null)
         }}
       />
-    </div>
+    </StandardPage>
   )
 }
+

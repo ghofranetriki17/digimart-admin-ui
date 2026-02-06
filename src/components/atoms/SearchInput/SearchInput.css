@@ -1,0 +1,12 @@
+.search-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-input-field {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 6px 8px;
+}

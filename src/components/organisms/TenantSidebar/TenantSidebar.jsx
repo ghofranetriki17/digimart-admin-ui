@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { DIGIMART_GPT_URL } from '../../../config/links'
 import './TenantSidebar.css'
 
 export default function TenantSidebar({
@@ -35,12 +36,13 @@ export default function TenantSidebar({
     }
     const next = sectionByKey[activeKey]
     if (next && next !== openSection) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpenSection(next)
     }
-  }, [activeKey])
+  }, [activeKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleSection = (key) => {
-    setOpenSection(key)
+    setOpenSection((prev) => (prev === key ? '' : key))
   }
 
   return (
@@ -303,13 +305,14 @@ export default function TenantSidebar({
           </button>
           {openSection === 'support' ? (
             <div className="tenant-sidebar-sublist">
-              <button
-                type="button"
+              <a
                 className="tenant-sidebar-link"
-                onClick={() => onSelect?.('digimartgpt')}
+                href={DIGIMART_GPT_URL}
+                target="_blank"
+                rel="noreferrer"
               >
                 DigiMartGPT
-              </button>
+              </a>
               <button
                 type="button"
                 className="tenant-sidebar-link"

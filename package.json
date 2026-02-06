@@ -9,6 +9,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "lint": "eslint .",
+    "audit:atomic": "node scripts/atomic-audit.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
