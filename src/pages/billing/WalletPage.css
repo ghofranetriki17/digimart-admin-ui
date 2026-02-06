@@ -72,6 +72,8 @@
   padding: 12px 14px;
   border-bottom: 1px solid #e5e7eb;
   background: #f8fafc;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .wallet-section-title {
@@ -91,6 +93,24 @@
   border-radius: 999px;
   background: #eef2ff;
   color: #4338ca;
+}
+
+.wallet-history-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wallet-history-action-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.wallet-history-action-btn.ui-button.secondary:hover:not(:disabled) {
+  box-shadow: none;
 }
 
 .wallet-history-list {
@@ -207,6 +227,20 @@
   text-align: center;
   border: 1px dashed #e5e7eb;
   border-radius: 10px;
+}
+
+.wallet-history-collapsed {
+  padding: 12px;
+  color: #9ca3af;
+  text-align: center;
+  border: 1px dashed #e5e7eb;
+  border-radius: 10px;
+  margin: 12px;
+}
+
+.wallet-history-modal {
+  max-height: 60vh;
+  overflow: auto;
 }
 
 @media (max-width: 900px) {

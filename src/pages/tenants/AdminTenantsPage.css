@@ -460,6 +460,22 @@
   color: var(--admin-accent);
   font-weight: 700;
   font-size: 12px;
+  border: none;
+}
+
+.tenant-tag-button {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tenant-tag-button:hover {
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+.tenant-tag-button:focus-visible {
+  outline: 2px solid rgba(15, 118, 110, 0.35);
+  outline-offset: 2px;
 }
 
 .tenant-details-metrics {
@@ -590,6 +606,68 @@
   color: #b91c1c;
 }
 
+.tenant-plan-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tenant-plan-modal-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border-200);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.tenant-plan-modal-label {
+  font-size: 12px;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tenant-plan-modal-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.tenant-plan-modal-list {
+  display: grid;
+  gap: 10px;
+}
+
+.tenant-plan-modal-toggle {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.tenant-plan-modal-toggle .toggle-label {
+  flex: 1;
+  text-align: left;
+}
+
+.tenant-plan-modal-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--admin-accent);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.tenant-plan-modal-empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--ink-500);
+  border: 1px dashed var(--border-200);
+  border-radius: 12px;
+}
+
 .tenant-current {
   display: flex;
   align-items: baseline;
@@ -607,10 +685,11 @@
   letter-spacing: 0.04em;
 }
 
-.tenant-planlist {
-  display: flex;
+.tenant-plan-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
-  gap: 8px;
 }
 
 .tenant-toggle {
@@ -1180,7 +1259,8 @@
   border: 1px solid var(--border-200);
   border-radius: 12px;
   padding: 12px;
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 .tenant-wallet-label {
@@ -1201,6 +1281,7 @@
   border-radius: 999px;
   font-weight: 700;
   font-size: 12px;
+  border: 1px solid transparent;
 }
 
 .tenant-wallet-pill.status-active {
@@ -1238,39 +1319,198 @@
   background: #ffffff;
 }
 
-.tenant-wallet-table {
+.tenant-wallet-history {
   border: 1px solid var(--border-200);
   border-radius: 12px;
-  overflow: hidden;
   background: #ffffff;
 }
 
-.tenant-wallet-table-head,
-.tenant-wallet-table-row {
-  display: grid;
-  grid-template-columns: 130px 120px 100px 100px 100px 1fr 120px;
+.tenant-wallet-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-200);
+  background: #f8fafc;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tenant-wallet-history-title {
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.tenant-wallet-history-subtitle {
+  font-size: 13px;
+  color: var(--ink-500);
+}
+
+.tenant-wallet-history-count {
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.tenant-wallet-history-actions {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  flex-wrap: wrap;
+}
+
+.tenant-wallet-history-action-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.tenant-wallet-history-action-btn.ui-button.secondary:hover:not(:disabled) {
+  box-shadow: none;
+}
+
+.tenant-wallet-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+.tenant-wallet-history-item {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) minmax(140px, 200px) 1fr;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-200);
+  background: #ffffff;
+}
+
+.tenant-wallet-history-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tenant-wallet-history-date {
+  font-size: 13px;
+  color: var(--ink-500);
+}
+
+.tenant-wallet-history-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.tenant-wallet-history-type.type-credit {
+  background: #ecfdf3;
+  color: #15803d;
+}
+
+.tenant-wallet-history-type.type-debit {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.tenant-wallet-history-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tenant-wallet-amount-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: #111827;
+  width: fit-content;
+}
+
+.tenant-wallet-amount-pill.amount-credit {
+  background: #ecfdf3;
+  color: #15803d;
+}
+
+.tenant-wallet-amount-pill.amount-debit {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.tenant-wallet-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ink-500);
+}
+
+.tenant-wallet-history-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
   align-items: center;
 }
 
-.tenant-wallet-table-head {
-  background: #f9fafb;
-  font-weight: 700;
+.tenant-wallet-meta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.tenant-wallet-table-row:nth-child(even) {
-  background: #f9fafb;
+.tenant-wallet-meta-label {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.tenant-wallet-meta-value {
+  font-weight: 600;
+  color: var(--ink-900);
 }
 
 .tenant-wallet-empty {
   padding: 12px;
   color: var(--ink-400);
+  text-align: center;
+  border: 1px dashed var(--border-200);
+  border-radius: 10px;
+}
+
+.tenant-wallet-history-collapsed {
+  padding: 12px;
+  color: var(--ink-400);
+  text-align: center;
+  border: 1px dashed var(--border-200);
+  border-radius: 10px;
+  margin: 12px;
+}
+
+.tenant-wallet-history-modal {
+  max-height: 60vh;
+  overflow: auto;
 }
 
 @media (max-width: 900px) {
-  .tenant-wallet-table-head,
-  .tenant-wallet-table-row {
+  .tenant-wallet-history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .tenant-wallet-history-item {
     grid-template-columns: 1fr;
   }
 }

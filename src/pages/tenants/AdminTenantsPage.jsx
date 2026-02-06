@@ -64,6 +64,9 @@ export default function AdminTenantsPage({ token }) {
   const [walletLoading, setWalletLoading] = useState(false)
   const [walletProcessing, setWalletProcessing] = useState(false)
   const [walletError, setWalletError] = useState('')
+  const [planModalOpen, setPlanModalOpen] = useState(false)
+  const [walletHistoryExpanded, setWalletHistoryExpanded] = useState(true)
+  const [walletHistoryOpen, setWalletHistoryOpen] = useState(false)
   const [storeDetailOpen, setStoreDetailOpen] = useState(false)
   const [storeDetail, setStoreDetail] = useState(null)
   const [storeMapExpanded, setStoreMapExpanded] = useState(false)
@@ -262,7 +265,52 @@ export default function AdminTenantsPage({ token }) {
     setWalletReference('')
     setWalletMode('CREDIT')
     setShowStaff(true)
+    setWalletHistoryExpanded(true)
+    setWalletHistoryOpen(false)
+    setPlanModalOpen(false)
   }
+
+  const renderTenantWalletHistoryList = () => (
+    <div className="tenant-wallet-history-list">
+      {tenantTxns.map((txn) => {
+        const typeKey = String(txn.type || '').toLowerCase()
+        const amountClass =
+          typeKey === 'credit' ? 'amount-credit' : typeKey === 'debit' ? 'amount-debit' : ''
+        return (
+          <div key={txn.id} className="tenant-wallet-history-item">
+            <div className="tenant-wallet-history-main">
+              <div className="tenant-wallet-history-date">{txn.transactionDate}</div>
+              <div className={`tenant-wallet-history-type type-${typeKey}`}>
+                {txn.type || '—'}
+              </div>
+            </div>
+            <div className="tenant-wallet-history-amount">
+              <div className={`tenant-wallet-amount-pill ${amountClass}`}>
+                {txn.amount}
+              </div>
+              <div className="tenant-wallet-balance">
+                <span>Avant {txn.balanceBefore}</span>
+                <span>Apres {txn.balanceAfter}</span>
+              </div>
+            </div>
+            <div className="tenant-wallet-history-meta">
+              <div className="tenant-wallet-meta-group">
+                <span className="tenant-wallet-meta-label">Raison</span>
+                <span className="tenant-wallet-meta-value">{txn.reason || '—'}</span>
+              </div>
+              <div className="tenant-wallet-meta-group">
+                <span className="tenant-wallet-meta-label">Ref</span>
+                <span className="tenant-wallet-meta-value">{txn.reference || '—'}</span>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+      {tenantTxns.length === 0 ? (
+        <div className="tenant-wallet-empty">Aucune transaction</div>
+      ) : null}
+    </div>
+  )
 
   const openStoreDetails = (store) => {
     setStoreDetail(store)
@@ -425,7 +473,14 @@ export default function AdminTenantsPage({ token }) {
               <span className={`tenant-card-status ${statusFor(summaryTenant).tone}`}>
                 {statusFor(summaryTenant).label}
               </span>
-              <span className="tenant-tag">Plan: {currentPlan?.planName || 'Aucun'}</span>
+              <button
+                type="button"
+                className="tenant-tag tenant-tag-button"
+                onClick={() => setPlanModalOpen(true)}
+                aria-label="Voir details abonnement"
+              >
+                Plan: {currentPlan?.planName || 'Aucun'}
+              </button>
               {summaryTenant.defaultLocale ? (
                 <span className="tenant-tag">Locale: {summaryTenant.defaultLocale}</span>
               ) : null}
@@ -527,30 +582,18 @@ export default function AdminTenantsPage({ token }) {
                 <span className="tenant-label">Plan actuel</span>
                 <strong>{currentPlan?.planName || 'Aucun'}</strong>
               </div>
-              <div className="tenant-planlist">
-                {plans.map((plan) => {
-                  const isOn = currentPlan?.planId === plan.id
-                  return (
-                    <button
-                      key={plan.id}
-                      type="button"
-                      className={`tenant-toggle ${isOn ? 'on' : 'off'}`}
-                      disabled={rowLoading[selectedTenantId]}
-                      onClick={() => {
-                        if (!isOn) activate(selectedTenantId, plan.id)
-                      }}
-                    >
-                      <span className="toggle-dot" />
-                      <span className="toggle-label">
-                        {plan.name} ({plan.price} {plan.currency})
-                      </span>
-                    </button>
-                  )
-                })}
+              <div className="tenant-plan-actions">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setPlanModalOpen(true)}
+                >
+                  Gerer les plans
+                </Button>
+                {rowLoading[selectedTenantId] ? (
+                  <span className="tenant-row-loading">Mise a jour...</span>
+                ) : null}
               </div>
-              {rowLoading[selectedTenantId] ? (
-                <div className="tenant-row-loading">Mise a jour...</div>
-              ) : null}
             </div>
           </div>
 
@@ -835,31 +878,99 @@ export default function AdminTenantsPage({ token }) {
               </Button>
             </div>
 
-            <div className="tenant-wallet-table">
-              <div className="tenant-wallet-table-head">
-                <div>Date</div>
-                <div>Type</div>
-                <div>Montant</div>
-                <div>Avant</div>
-                <div>Apres</div>
-                <div>Raison</div>
-                <div>Ref</div>
-              </div>
-              {tenantTxns.map((txn) => (
-                <div key={txn.id} className="tenant-wallet-table-row">
-                  <div>{txn.transactionDate}</div>
-                  <div>{txn.type}</div>
-                  <div>{txn.amount}</div>
-                  <div>{txn.balanceBefore}</div>
-                  <div>{txn.balanceAfter}</div>
-                  <div>{txn.reason}</div>
-                  <div>{txn.reference || '—'}</div>
+            <div className="tenant-wallet-history">
+              <div className="tenant-wallet-history-header">
+                <div>
+                  <div className="tenant-wallet-history-title">Historique</div>
+                  <div className="tenant-wallet-history-subtitle">Derniers mouvements du wallet.</div>
                 </div>
-              ))}
-              {tenantTxns.length === 0 ? (
-                <div className="tenant-wallet-empty">Aucune transaction</div>
-              ) : null}
+                <div className="tenant-wallet-history-actions">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="tenant-wallet-history-action-btn"
+                    aria-expanded={walletHistoryExpanded}
+                    onClick={() => setWalletHistoryExpanded((prev) => !prev)}
+                  >
+                    {walletHistoryExpanded ? 'Masquer' : 'Afficher'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="tenant-wallet-history-action-btn"
+                    disabled={tenantTxns.length === 0}
+                    onClick={() => setWalletHistoryOpen(true)}
+                  >
+                    Ouvrir popup
+                  </Button>
+                  <div className="tenant-wallet-history-count">
+                    {tenantTxns.length} mouvements
+                  </div>
+                </div>
+              </div>
+              {walletHistoryExpanded ? (
+                renderTenantWalletHistoryList()
+              ) : (
+                <div className="tenant-wallet-history-collapsed">Historique masque.</div>
+              )}
             </div>
+            <Modal
+              open={walletHistoryOpen}
+              title="Historique du wallet"
+              onClose={() => setWalletHistoryOpen(false)}
+            >
+              <div className="tenant-wallet-history-modal">
+                {renderTenantWalletHistoryList()}
+              </div>
+            </Modal>
+
+            <Modal
+              open={planModalOpen}
+              title="Abonnement du tenant"
+              onClose={() => setPlanModalOpen(false)}
+            >
+              <div className="tenant-plan-modal">
+                <div className="tenant-plan-modal-summary">
+                  <div>
+                    <div className="tenant-plan-modal-label">Plan actuel</div>
+                    <div className="tenant-plan-modal-value">
+                      {currentPlan?.planName || 'Aucun'}
+                    </div>
+                  </div>
+                  <span className={`tenant-plan-pill ${currentPlan ? 'active' : 'inactive'}`}>
+                    {currentPlan ? 'Actif' : 'Aucun'}
+                  </span>
+                </div>
+                <div className="tenant-plan-modal-list">
+                  {plans.map((plan) => {
+                    const isOn = currentPlan?.planId === plan.id
+                    return (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        className={`tenant-toggle tenant-plan-modal-toggle ${isOn ? 'on' : 'off'}`}
+                        disabled={rowLoading[selectedTenantId]}
+                        onClick={() => {
+                          if (!isOn) activate(selectedTenantId, plan.id)
+                        }}
+                        aria-pressed={isOn}
+                      >
+                        <span className="toggle-dot" />
+                        <span className="toggle-label">
+                          {plan.name} ({plan.price} {plan.currency})
+                        </span>
+                        {isOn ? (
+                          <span className="tenant-plan-modal-badge">Actuel</span>
+                        ) : null}
+                      </button>
+                    )
+                  })}
+                  {plans.length === 0 ? (
+                    <div className="tenant-plan-modal-empty">Aucun plan configure.</div>
+                  ) : null}
+                </div>
+              </div>
+            </Modal>
           </div>
 
           <Modal

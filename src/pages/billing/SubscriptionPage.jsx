@@ -1,5 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import StandardPage from '../../templates/StandardPage'
+import Button from '../../components/atoms/Button'
+import Modal from '../../components/atoms/Modal'
 import './SubscriptionPage.css'
 
 export default function SubscriptionPage({ token, tenantId }) {
@@ -7,6 +9,8 @@ export default function SubscriptionPage({ token, tenantId }) {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [historyExpanded, setHistoryExpanded] = useState(true)
+  const [historyModalOpen, setHistoryModalOpen] = useState(false)
 
   const auth = { Authorization: `Bearer ${token}` }
 
@@ -33,6 +37,41 @@ export default function SubscriptionPage({ token, tenantId }) {
   useEffect(() => {
     if (tenantId) load()
   }, [tenantId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const renderHistoryList = () => (
+    <div className="subscription-history-list">
+      {history.map((h) => {
+        const actionKey = String(h.action || '').toLowerCase().replace(/\s+/g, '-')
+        return (
+          <div key={h.id} className="subscription-history-item">
+            <div className="subscription-history-main">
+              <div className="subscription-history-date">{h.performedAt}</div>
+              <div className={`subscription-history-action action-${actionKey}`}>
+                {h.action || 'â€”'}
+              </div>
+            </div>
+            <div className="subscription-history-meta">
+              <div className="subscription-meta-group">
+                <span className="subscription-meta-label">Ancien plan</span>
+                <span className="subscription-meta-value">{h.oldPlanId || 'â€”'}</span>
+              </div>
+              <div className="subscription-meta-group">
+                <span className="subscription-meta-label">Nouveau plan</span>
+                <span className="subscription-meta-value">{h.newPlanId || 'â€”'}</span>
+              </div>
+              <div className="subscription-meta-group">
+                <span className="subscription-meta-label">Par</span>
+                <span className="subscription-meta-value">{h.performedBy || 'â€”'}</span>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+      {history.length === 0 ? (
+        <div className="subscription-empty">Pas dâ€™historique</div>
+      ) : null}
+    </div>
+  )
 
   return (
     <StandardPage
@@ -74,41 +113,41 @@ export default function SubscriptionPage({ token, tenantId }) {
             <div className="subscription-section-title">Historique</div>
             <div className="subscription-section-subtitle">Derniers changements de plan.</div>
           </div>
-          <div className="subscription-count">{history.length} entrees</div>
+          <div className="subscription-history-actions">
+            <Button
+              type="button"
+              variant="secondary"
+              className="subscription-history-action-btn"
+              aria-expanded={historyExpanded}
+              onClick={() => setHistoryExpanded((prev) => !prev)}
+            >
+              {historyExpanded ? 'Masquer' : 'Afficher'}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="subscription-history-action-btn"
+              disabled={history.length === 0}
+              onClick={() => setHistoryModalOpen(true)}
+            >
+              Ouvrir popup
+            </Button>
+            <div className="subscription-count">{history.length} entrees</div>
+          </div>
         </div>
-        <div className="subscription-history-list">
-          {history.map((h) => {
-            const actionKey = String(h.action || '').toLowerCase().replace(/\s+/g, '-')
-            return (
-              <div key={h.id} className="subscription-history-item">
-                <div className="subscription-history-main">
-                  <div className="subscription-history-date">{h.performedAt}</div>
-                  <div className={`subscription-history-action action-${actionKey}`}>
-                    {h.action || 'â€”'}
-                  </div>
-                </div>
-                <div className="subscription-history-meta">
-                  <div className="subscription-meta-group">
-                    <span className="subscription-meta-label">Ancien plan</span>
-                    <span className="subscription-meta-value">{h.oldPlanId || 'â€”'}</span>
-                  </div>
-                  <div className="subscription-meta-group">
-                    <span className="subscription-meta-label">Nouveau plan</span>
-                    <span className="subscription-meta-value">{h.newPlanId || 'â€”'}</span>
-                  </div>
-                  <div className="subscription-meta-group">
-                    <span className="subscription-meta-label">Par</span>
-                    <span className="subscription-meta-value">{h.performedBy || 'â€”'}</span>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-          {history.length === 0 ? (
-            <div className="subscription-empty">Pas dâ€™historique</div>
-          ) : null}
-        </div>
+        {historyExpanded ? (
+          renderHistoryList()
+        ) : (
+          <div className="subscription-history-collapsed">Historique masque.</div>
+        )}
       </div>
+      <Modal
+        open={historyModalOpen}
+        title="Historique des abonnements"
+        onClose={() => setHistoryModalOpen(false)}
+      >
+        <div className="subscription-history-modal">{renderHistoryList()}</div>
+      </Modal>
     </StandardPage>
   )
 }

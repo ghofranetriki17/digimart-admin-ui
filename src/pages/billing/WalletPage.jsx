@@ -1,5 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import StandardPage from '../../templates/StandardPage'
+import Button from '../../components/atoms/Button'
+import Modal from '../../components/atoms/Modal'
 import './WalletPage.css'
 
 export default function WalletPage({ token, tenantId }) {
@@ -7,6 +9,8 @@ export default function WalletPage({ token, tenantId }) {
   const [txns, setTxns] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [historyExpanded, setHistoryExpanded] = useState(true)
+  const [historyModalOpen, setHistoryModalOpen] = useState(false)
 
   const auth = { Authorization: `Bearer ${token}` }
 
@@ -31,6 +35,41 @@ export default function WalletPage({ token, tenantId }) {
   useEffect(() => {
     if (tenantId) load()
   }, [tenantId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const renderHistoryList = () => (
+    <div className="wallet-history-list">
+      {txns.map((t) => {
+        const typeKey = String(t.type || '').toLowerCase()
+        const amountClass = typeKey === 'credit' ? 'amount-credit' : typeKey === 'debit' ? 'amount-debit' : ''
+        return (
+          <div key={t.id} className="wallet-history-item">
+            <div className="wallet-history-main">
+              <div className="wallet-history-date">{t.transactionDate}</div>
+              <div className={`wallet-history-type type-${typeKey}`}>{t.type || 'â€”'}</div>
+            </div>
+            <div className="wallet-history-amount">
+              <div className={`wallet-amount-pill ${amountClass}`}>{t.amount}</div>
+              <div className="wallet-balance">
+                <span>Avant {t.balanceBefore}</span>
+                <span>Apres {t.balanceAfter}</span>
+              </div>
+            </div>
+            <div className="wallet-history-meta">
+              <div className="wallet-meta-group">
+                <span className="wallet-meta-label">Raison</span>
+                <span className="wallet-meta-value">{t.reason || 'â€”'}</span>
+              </div>
+              <div className="wallet-meta-group">
+                <span className="wallet-meta-label">Ref</span>
+                <span className="wallet-meta-value">{t.reference || 'â€”'}</span>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+      {txns.length === 0 ? <div className="wallet-empty">Aucune transaction</div> : null}
+    </div>
+  )
 
   return (
     <StandardPage
@@ -70,41 +109,41 @@ export default function WalletPage({ token, tenantId }) {
             <div className="wallet-section-title">Historique des mouvements</div>
             <div className="wallet-section-subtitle">Dernieres operations du wallet.</div>
           </div>
-          <div className="wallet-count">{txns.length} mouvements</div>
+          <div className="wallet-history-actions">
+            <Button
+              type="button"
+              variant="secondary"
+              className="wallet-history-action-btn"
+              aria-expanded={historyExpanded}
+              onClick={() => setHistoryExpanded((prev) => !prev)}
+            >
+              {historyExpanded ? 'Masquer' : 'Afficher'}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="wallet-history-action-btn"
+              disabled={txns.length === 0}
+              onClick={() => setHistoryModalOpen(true)}
+            >
+              Ouvrir popup
+            </Button>
+            <div className="wallet-count">{txns.length} mouvements</div>
+          </div>
         </div>
-        <div className="wallet-history-list">
-          {txns.map((t) => {
-            const typeKey = String(t.type || '').toLowerCase()
-            const amountClass = typeKey === 'credit' ? 'amount-credit' : typeKey === 'debit' ? 'amount-debit' : ''
-            return (
-              <div key={t.id} className="wallet-history-item">
-                <div className="wallet-history-main">
-                  <div className="wallet-history-date">{t.transactionDate}</div>
-                  <div className={`wallet-history-type type-${typeKey}`}>{t.type || 'â€”'}</div>
-                </div>
-                <div className="wallet-history-amount">
-                  <div className={`wallet-amount-pill ${amountClass}`}>{t.amount}</div>
-                  <div className="wallet-balance">
-                    <span>Avant {t.balanceBefore}</span>
-                    <span>Apres {t.balanceAfter}</span>
-                  </div>
-                </div>
-                <div className="wallet-history-meta">
-                  <div className="wallet-meta-group">
-                    <span className="wallet-meta-label">Raison</span>
-                    <span className="wallet-meta-value">{t.reason || 'â€”'}</span>
-                  </div>
-                  <div className="wallet-meta-group">
-                    <span className="wallet-meta-label">Ref</span>
-                    <span className="wallet-meta-value">{t.reference || 'â€”'}</span>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-          {txns.length === 0 ? <div className="wallet-empty">Aucune transaction</div> : null}
-        </div>
+        {historyExpanded ? (
+          renderHistoryList()
+        ) : (
+          <div className="wallet-history-collapsed">Historique masque.</div>
+        )}
       </div>
+      <Modal
+        open={historyModalOpen}
+        title="Historique du wallet"
+        onClose={() => setHistoryModalOpen(false)}
+      >
+        <div className="wallet-history-modal">{renderHistoryList()}</div>
+      </Modal>
     </StandardPage>
   )
 }
